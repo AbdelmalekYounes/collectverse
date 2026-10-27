@@ -16,6 +16,7 @@ local Theme = require(Shared.Config.Theme)
 local CardCatalog = require(Shared.Catalog.CardCatalog)
 local Elements = require(Shared.Catalog.Elements)
 local ModelFactory = require(Shared.Visuals.ModelFactory)
+local Text = require(Shared.Util.Text)
 
 local HubBuilder = {}
 
@@ -95,7 +96,7 @@ local function label(parent: BasePart, title: string, subtitle: string, color: C
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Size = UDim2.fromScale(1, 0.62)
-	titleLabel.Text = string.upper(title)
+	titleLabel.Text = Text.upper(title)
 	titleLabel.FontFace = Theme.Fonts.Title
 	titleLabel.TextScaled = true
 	titleLabel.TextColor3 = color

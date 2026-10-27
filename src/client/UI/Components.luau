@@ -4,6 +4,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Theme = require(ReplicatedStorage.Shared.Config.Theme)
+local Text = require(ReplicatedStorage.Shared.Util.Text)
 local Motion = require(script.Parent.Motion)
 
 local Components = {}
@@ -115,7 +116,7 @@ end
 
 function Components.heading(text: string, props: { [string]: any }?): TextLabel
 	return Components.label(merge({
-		Text = string.upper(text),
+		Text = Text.upper(text),
 		FontFace = Theme.Fonts.Title,
 		TextSize = Theme.TextSize.Caption,
 		TextColor3 = Theme.Colors.TextMuted,

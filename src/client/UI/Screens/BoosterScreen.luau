@@ -9,6 +9,7 @@ local Theme = require(Shared.Config.Theme)
 local Boosters = require(Shared.Catalog.Boosters)
 local BoosterOdds = require(Shared.Catalog.BoosterOdds)
 local Rarities = require(Shared.Catalog.Rarities)
+local Text = require(Shared.Util.Text)
 
 local UI = script.Parent.Parent
 local Components = require(UI.Components)
@@ -36,7 +37,7 @@ local function packVisual(parent: Instance, booster)
 		Components.padding(16),
 	})
 	Components.label({
-		Text = string.upper(booster.name),
+		Text = Text.upper(booster.name),
 		FontFace = Theme.Fonts.Title,
 		TextSize = Theme.TextSize.Heading,
 		TextXAlignment = Enum.TextXAlignment.Center,

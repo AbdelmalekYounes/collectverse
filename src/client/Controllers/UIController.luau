@@ -15,7 +15,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
 local Theme = require(ReplicatedStorage.Shared.Config.Theme)
+local Text = require(ReplicatedStorage.Shared.Util.Text)
 
+local BattleDirector = require(script.Parent.BattleDirector)
 local DataController = require(script.Parent.DataController)
 
 local UI = script.Parent.Parent.UI
@@ -97,7 +99,7 @@ local function buildModal(definition)
 		Parent = panel,
 	}, { Components.padding(0, 20) })
 	Components.label({
-		Text = string.upper(definition.title),
+		Text = Text.upper(definition.title),
 		FontFace = Theme.Fonts.Title,
 		TextSize = Theme.TextSize.Heading,
 		TextWrapped = false,
@@ -148,7 +150,8 @@ local function buildModal(definition)
 end
 
 function UIController.open(screenId: string)
-	if currentId == screenId then
+	-- Aucun écran modal pendant un combat : l'interface de combat occupe l'écran.
+	if currentId == screenId or BattleDirector.isActive() then
 		return
 	end
 	local definition = screenDefinitions[screenId]
@@ -248,6 +251,18 @@ function UIController.init()
 	if DataController.getProfile() then
 		hud.setProfile(DataController.getProfile())
 	end
+
+	-- Mode combat : l'interface du Hub et les invites de zone s'effacent.
+	BattleDirector.init(canvas)
+	BattleDirector.ModeChanged:Connect(function(inBattle: boolean)
+		hud.setVisible(not inBattle)
+		setPromptsEnabled(not inBattle)
+	end)
+	BattleDirector.ExitRequested:Connect(function(choice: string)
+		if choice == "replay" then
+			UIController.open("Battle")
+		end
+	end)
 
 	overlay = new("TextButton", {
 		Name = "Overlay",

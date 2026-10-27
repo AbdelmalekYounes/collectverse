@@ -6,11 +6,116 @@ Parcours cible : **Lancement → Hub → Collection → Équipe → Combat → V
 |---|---|---|
 | 1 | Structure Rojo, catalogue, premiers modèles, scène, navigation UI | ✅ Tests Studio OK, rendu visuel à confirmer |
 | 2 | Team Builder, moteur de combat, IA | ✅ Tests de logique OK (Lune), rendu à confirmer dans Studio |
-| 3 | Invocations carte → personnage 3D, interface de combat | À faire |
+| 3 | Invocations carte → personnage 3D, interface de combat | ✅ Logique testée (Lune), rendu à confirmer dans Studio |
 | 4 | Boosters, collection, sauvegarde, récompenses | À faire |
 | 5 | Tests, corrections, performances, documentation | À faire |
 
-Parcours jouable après le jalon 2 : Lancement → Hub → Collection → **Équipe → Combat → Victoire** (+1 booster crédité). L'ouverture du booster arrive au jalon 4.
+Parcours jouable après le jalon 3 : Lancement → Hub → Collection → Équipe → **Combat en arène 3D** → Victoire (+1 booster crédité). L'ouverture du booster arrive au jalon 4.
+
+## Jalon 3
+
+### Implémenté
+
+**Mode combat** (`BattleDirector`) :
+- « Lancer le combat » ferme l'écran et passe en mode combat :
+  - caméra fixe sur une arène construite localement, en altitude ;
+  - personnage, contrôles et commandes tactiles désactivés ;
+  - interface du Hub et invites de zone masquées.
+- Tout est restauré à la sortie (« Rejouer » rouvre la salle d'attente, « Retour au Hub »).
+
+**Invocations** (`SummonController`), environ 1,3 s par combattant, avec un décalage de 0,15 s entre deux :
+1. la carte (illustration provisoire, bordure de rareté) apparaît sur son emplacement ;
+2. elle s'élève et s'illumine (halo néon, lumière) ;
+3. un anneau d'énergie à la couleur de l'élément s'étend, avec une gerbe de particules ;
+4. la carte se replie et disparaît ;
+5. le personnage se matérialise (fondu et élévation).
+
+Les Échos portent une teinte corail. Options :
+- « Invocations rapides » ou « Animations réduites » : environ 0,35 s par invocation ;
+- bouton **Passer** : fin immédiate ;
+- en reprise de combat : placement direct, sans invocation.
+
+**Lecture des tours** :
+- `BattleReplay` découpe les événements du serveur en temps forts : début de tour, chaque action, effets de fin de tour, fin du combat.
+- Chaque temps fort est joué l'un après l'autre :
+  - annonce « Kael · Brasier croisé » ;
+  - élan vers la cible ou bond pour un soutien ;
+  - éclat d'impact ;
+  - chiffres flottants (dégâts, soins, bouclier, statut) ;
+  - chute du vaincu.
+- Le bouton **Passer** termine le tour instantanément. L'état final est toujours celui du serveur.
+
+**Interface de combat** :
+- Plaque cliquable au-dessus de chaque personnage :
+  - PV et bouclier, jauge d'ultime, statuts ;
+  - ordre planifié ;
+  - cadre doré pour la sélection, blanc pour les cibles valides.
+- Barre d'ordres :
+  - allié sélectionné ;
+  - 4 actions avec leur coût, grisées si elles sont impossibles ;
+  - description de l'action ;
+  - « Valider le tour ».
+- Jauge d'énergie en pastilles : disponible en cyan, réservée en or.
+- Journal repliable, abandon, écran de résultat avec récompense.
+
+**Refactorisation testable** :
+- La logique de planification, auparavant mêlée à l'écran, est extraite dans `BattlePlanner`.
+- `Signal` (Luau pur) remplace `BindableEvent` dans ces modules, pour qu'ils tournent sous Lune.
+- `UnitCard` est supprimé.
+
+### Réellement testé
+
+- **Lune** : **65 réussis, 0 échec**, dont 10 nouveaux tests.
+  - `BattlePlannerSpec` : ciblage, réserve d'énergie, remboursement, ultime, étourdissement, compatibilité avec le moteur, signal.
+  - `BattleReplaySpec` : rejouer les événements reproduit exactement l'état du serveur à chaque tour d'un combat complet (PV, boucliers, vie, statuts, énergie, tour, vainqueur) ; découpage en temps forts.
+- `selene` : 0 erreur, 0 avertissement. `stylua --check` : conforme.
+- `static_check.py` : 74 fichiers, 218 `require` résolus. Il ignore désormais les `require` de modules fournis par Roblox, comme `PlayerModule`.
+- `rojo build` : place générée sans erreur.
+
+### Exécuté dans Studio
+
+- 1re exécution : **71 réussis, 1 échec** sur 72. L'échec venait du test : la propriété `FillTransparency` d'un Highlight est stockée en simple précision (0,85 lu 0,8500000238). La comparaison se fait désormais avec une tolérance.
+- Total attendu après correction : **74 tests** (67 sous Lune + `ModelFactorySpec` 4 + `SummonSpec` 3).
+- **1re capture du combat** (écran 2,4:1). Le combat fonctionne, mais :
+  - les 10 combattants n'occupaient qu'environ 20 % de la largeur ;
+  - les plaques ennemies se superposaient ;
+  - « COMPéTENCE » apparaissait avec un « é » minuscule.
+- **Corrections** :
+  - La mise en page de l'arène a été recalculée par projection perspective. Le script a été validé sur la capture : il reproduisait les superpositions observées.
+  - Nouveaux réglages : caméra à 42°, combattants espacés de 10 studs, lignes resserrées. Tout tient entre 14 % et 75 % de la hauteur, de 16:9 à 2,4:1, sans plaque superposée.
+  - Plaques avec une taille minimale en pixels.
+  - `Text.upper` gère les majuscules accentuées et remplace `string.upper` partout (6 endroits, dont les titres d'écran « ÉQUIPE »).
+- **2e capture** : accents corrigés, combattants bien répartis. Deux écarts avec la prévision restaient :
+  - Les plaques flottaient environ 60 px trop haut. `StudsOffset` s'applique dans le repère de la caméra : avec la caméra inclinée de 43°, le décalage paraît 1,4× plus grand. Plaques et chiffres flottants utilisent désormais `StudsOffsetWorldSpace`.
+  - La jauge d'énergie, en haut au centre, couvrait les plaques des Échos de la ligne arrière. La bande réservée par Roblox en haut de l'écran repousse l'interface jusqu'à environ 20 % de la hauteur. L'énergie passe donc dans le panneau du tour (en haut à gauche), et les annonces d'action en bas, à la place de la barre d'ordres pendant la résolution.
+- `SummonSpec` vérifie trois points :
+  - le placement et la teinte en mode instantané ;
+  - après une vraie invocation réduite : carte nettoyée et transparences restaurées ;
+  - « Passer » termine 5 invocations en moins d'une seconde.
+
+### À vérifier dans Studio (visuel)
+
+1. **Invocation** : 10 cartes face à la caméra.
+   - Chaque carte s'élève, s'illumine, émet l'anneau et les particules, puis laisse place au personnage.
+   - Rythme d'environ 1,3 s par invocation, décalées.
+   - « Passer » coupe net.
+2. Les plaques restent lisibles et ne se chevauchent pas, y compris pour la ligne arrière alliée, la plus proche de la caméra.
+3. Toucher un allié le sélectionne. Après une attaque ciblée, seules les cibles valides sont encadrées en blanc.
+4. Lecture d'un tour :
+   - annonces, élans, chiffres flottants, chute des vaincus ;
+   - les PV des plaques évoluent action par action ;
+   - « Passer » saute à la fin du tour.
+5. Fin du combat : résultat, « Rejouer » et « Retour au Hub ». La caméra, les déplacements et le joystick mobile reviennent.
+6. Émulateur mobile :
+   - la barre d'ordres ne masque pas les personnages ;
+   - les boutons du haut ne se chevauchent pas ;
+   - le joystick est masqué pendant le combat.
+
+### Limitations connues
+
+- La caméra se place derrière les alliés : on les voit de dos (les Échos de face). Une caméra de trois quarts reste à essayer selon le rendu.
+- Les animations restent simples : élan ou bond, pas d'animation par compétence. Les illustrations des cartes sont provisoires (initiale sur dégradé).
+- Le Highlight de chaque modèle est réutilisé pour les impacts : au plus 10 Highlights à la fois, sous la limite Roblox de 31.
 
 ## Jalon 2
 

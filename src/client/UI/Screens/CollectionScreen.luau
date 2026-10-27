@@ -11,6 +11,7 @@ local AbilityText = require(Shared.Catalog.AbilityText)
 local Elements = require(Shared.Catalog.Elements)
 local Rarities = require(Shared.Catalog.Rarities)
 local Roles = require(Shared.Catalog.Roles)
+local Text = require(Shared.Util.Text)
 
 local UI = script.Parent.Parent
 local Components = require(UI.Components)
@@ -134,7 +135,7 @@ local function actionCard(parent: Instance, layoutOrder: number, action)
 		Parent = card,
 	})
 	Components.label({
-		Text = string.upper(AbilityText.slotLabel(action.slot)),
+		Text = Text.upper(AbilityText.slotLabel(action.slot)),
 		FontFace = Theme.Fonts.Bold,
 		TextSize = Theme.TextSize.Caption,
 		TextColor3 = color,

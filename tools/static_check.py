@@ -228,8 +228,10 @@ def check_requires(tokens, path: Path, script_path, instances, errors: list[str]
                 variables[tokens[i + 1][1]] = None
         if text == "require" and i + 2 < len(tokens) and tokens[i + 1][1] == "(":
             resolved, end = parse_chain(tokens, i + 2, variables, script_path)
-            if resolved is None:
-                continue  # expression dynamique (ex. require(module) dans le runner)
+            if resolved is None or (resolved[:1] not in instances):
+                # Expression dynamique (ex. require(module) dans le runner) ou instance
+                # fournie par Roblox hors du projet (ex. Players…PlayerModule).
+                continue
             checked += 1
             target = instances.get(resolved)
             if target is None:

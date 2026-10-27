@@ -2,8 +2,8 @@
 
 Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats stratégiques au tour par tour.
 
-> **État : jalon 2 sur 5.** Hub, collection, Team Builder et combat PvE 5 contre 5 contre l'IA.
-> L'arène 3D, l'ouverture des boosters et la sauvegarde ne sont pas encore disponibles. Voir [docs/JALONS.md](docs/JALONS.md).
+> **État : jalon 3 sur 5.** Hub, collection, Team Builder, et combat PvE 5 contre 5 dans une arène 3D, avec invocations carte → personnage.
+> L'ouverture des boosters et la sauvegarde ne sont pas encore disponibles. Voir [docs/JALONS.md](docs/JALONS.md).
 
 ## Installation
 
@@ -106,7 +106,10 @@ src/server   → ServerScriptService.Server
   Net/         RemoteGuard, RateLimiter
   Data/        ProfileTemplate (profil versionné)
 src/client   → StarterPlayerScripts.Client
-  Controllers/ UIController (navigation), ZoneController, HubAmbience
+  Controllers/ UIController (navigation), ZoneController, HubAmbience,
+               DataController, BattleController, BattleDirector (mise en scène),
+               BattlePlanner et BattleReplay (logique pure, testées avec Lune)
+  Battle/      Arena, BattleCamera, SummonController, BattleFx (présentation 3D)
   State/       ClientSettings (préférences de présentation)
   UI/          Components, CardTile, Hud, Motion, Screens/
 tests        → ServerScriptService.Tests         (Studio uniquement)
@@ -122,7 +125,8 @@ Correspondance avec l'architecture cible :
 | TeamService | `server/Services/TeamService` + `shared/Battle/TeamRules` | 2 ✅ |
 | BattleEngine, AbilitySystem, CombatAI | `shared/Battle` (logique pure) + `server/Services/BattleService` | 2 ✅ |
 | PlayerDataService | `server/Services/PlayerDataService` (session ; DataStore au jalon 4) | 2 ◐ |
-| SummonController | `client/Controllers` + `shared/Visuals/ModelFactory` (modèles prêts) | 3 |
+| SummonController | `client/Battle/SummonController` + `shared/Visuals/ModelFactory` | 3 ✅ |
+| Interface de combat | `client/Controllers/BattleDirector`, `BattlePlanner`, `BattleReplay` + `client/UI/BattleHud`, `UnitPlate` | 3 ✅ |
 | CollectionService, BoosterService | `server/Services` | 4 |
 
 Principes :

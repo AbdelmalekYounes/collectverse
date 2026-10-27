@@ -25,6 +25,7 @@ local NAV_WIDTH = 150
 export type HudApi = {
 	setActive: (screenId: string?) -> (),
 	setProfile: (profile: any) -> (),
+	setVisible: (visible: boolean) -> (),
 }
 
 function Hud.create(canvas: Frame, controller): HudApi
@@ -128,6 +129,13 @@ function Hud.create(canvas: Frame, controller): HudApi
 				stroke.Color = if id == screenId then entry.color else Theme.Colors.Stroke
 			end
 		end
+	end
+
+	-- Masqué pendant un combat, qui a sa propre interface.
+	function api.setVisible(visible: boolean)
+		brand.Visible = visible
+		status.Visible = visible
+		nav.Visible = visible
 	end
 
 	function api.setProfile(profile)
