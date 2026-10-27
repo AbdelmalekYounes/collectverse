@@ -19,6 +19,10 @@ local function setTeam(player: Player, team: any)
 	if not profile then
 		return { ok = false, reason = "Profil indisponible" }
 	end
+	local modifiable, blocked = PlayerDataService.canModify(player)
+	if not modifiable then
+		return { ok = false, reason = blocked }
+	end
 	if BattleService.isInBattle(player) then
 		return { ok = false, reason = "Impossible de modifier l'équipe pendant un combat" }
 	end

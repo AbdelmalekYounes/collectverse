@@ -7,12 +7,14 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage.Shared
 local Theme = require(Shared.Config.Theme)
 local CardCatalog = require(Shared.Catalog.CardCatalog)
 local Statuses = require(Shared.Catalog.Statuses)
 local Signal = require(Shared.Util.Signal)
+local VisualAssets = require(Shared.Visuals.VisualAssets)
 
 local Client = script.Parent.Parent
 local BattleController = require(script.Parent.BattleController)
@@ -22,6 +24,7 @@ local ClientSettings = require(Client.State.ClientSettings)
 local Arena = require(Client.Battle.Arena)
 local BattleCamera = require(Client.Battle.BattleCamera)
 local BattleFx = require(Client.Battle.BattleFx)
+local FighterAnimator = require(Client.Battle.FighterAnimator)
 local SummonController = require(Client.Battle.SummonController)
 local BattleHud = require(Client.UI.BattleHud)
 local UnitPlate = require(Client.UI.UnitPlate)
@@ -55,6 +58,7 @@ local display = nil -- état affiché (snapshot ou rejeu en cours)
 local models: { [string]: Model } = {}
 local homes: { [string]: CFrame } = {}
 local plates = {}
+local viewportConnection: RBXScriptConnection? = nil
 
 local function speed(): number
 	return if ClientSettings.get("reducedMotion") then REDUCED_SPEED else 1
@@ -111,6 +115,7 @@ local function playEventFx(event, rate: number)
 			text ..= string.format(" (%d bouclier)", event.absorbed)
 		end
 		BattleFx.floatText(model, text, color, rate)
+		FighterAnimator.play(model, "Hit", rate) -- facultatif : l'éclat suffit sans asset
 	elseif event.type == "Heal" and model and event.amount > 0 then
 		BattleFx.flash(model, Theme.Colors.Success, rate)
 		BattleFx.floatText(model, "+" .. event.amount, Theme.Colors.Success, rate)
@@ -121,7 +126,8 @@ local function playEventFx(event, rate: number)
 		local color = if info and info.kind == "Debuff" then Theme.Colors.Violet else Theme.Colors.Gold
 		BattleFx.floatText(model, if info then info.name else event.status, color, rate)
 	elseif event.type == "Defeated" and model then
-		BattleFx.defeat(model, rate)
+		FighterAnimator.play(model, "Defeat", rate)
+		BattleFx.defeat(model, rate) -- le fondu s'applique dans tous les cas
 	elseif event.type == "Skip" and models[event.actor] then
 		BattleFx.floatText(models[event.actor], "Étourdi", Theme.Colors.Violet, rate)
 	end
@@ -137,6 +143,11 @@ local function playBeat(beat)
 		local color = if actor.side == "Ally" then Theme.Colors.Cyan else Theme.Colors.Coral
 		hud.toast(actor.name .. " · " .. actionName(actor, first.slot), color, 0.9 / rate)
 		local actorModel = models[first.actor]
+		local animationKind = VisualAssets.ActionAnimation[first.slot]
+		if actorModel and animationKind and FighterAnimator.play(actorModel, animationKind, rate) then
+			-- Animation spécifique jouée : pas de mouvement générique.
+			actorModel = nil
+		end
 		if actorModel then
 			-- Élan vers les adversaires visés, simple bond pour une action de soutien.
 			local sum, count = Vector3.zero, 0
@@ -268,6 +279,16 @@ function BattleDirector.enter(withSummon: boolean, subtitle: string?)
 	actors.Name = "Combatants"
 	actors.Parent = arena
 	BattleCamera.enter()
+	-- Résolution ou orientation modifiée en plein combat : caméra et plaques suivent.
+	local camera = Workspace.CurrentCamera
+	if camera then
+		viewportConnection = camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+			BattleCamera.refresh()
+			for _, plate in plates do
+				plate.resize()
+			end
+		end)
+	end
 
 	local entries = {}
 	for _, uid in snapshot.unitOrder do
@@ -290,6 +311,10 @@ function BattleDirector.enter(withSummon: boolean, subtitle: string?)
 	end
 
 	models = summoned
+	for _, model in models do
+		FighterAnimator.preload(model)
+		FighterAnimator.startIdle(model)
+	end
 	for uid, model in models do
 		homes[uid] = (model.PrimaryPart :: BasePart).CFrame
 		plates[uid] = UnitPlate.create(model, display.units[uid], plateFolder, onUnitClicked)
@@ -314,6 +339,10 @@ function BattleDirector.exit(choice: string)
 	active = false
 	phase = "Idle"
 	SummonController.requestSkip()
+	if viewportConnection then
+		viewportConnection:Disconnect()
+		viewportConnection = nil
+	end
 	for _, plate in plates do
 		plate.billboard:Destroy()
 	end

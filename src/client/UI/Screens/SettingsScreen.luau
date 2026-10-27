@@ -29,6 +29,11 @@ local TOGGLES = {
 		label = "Invocations rapides",
 		description = "Raccourcit l'animation carte → personnage en combat.",
 	},
+	{
+		key = "lowEffects",
+		label = "Effets réduits",
+		description = "Moins de particules et de lumières : pour les appareils peu puissants.",
+	},
 }
 
 function SettingsScreen.build(container: Frame, _controller)

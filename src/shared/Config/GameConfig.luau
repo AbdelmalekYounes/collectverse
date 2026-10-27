@@ -4,7 +4,7 @@
 local Freeze = require(script.Parent.Parent.Util.Freeze)
 
 local GameConfig = {
-	Version = "0.5.0-jalon5",
+	Version = "0.5.1-audit",
 
 	Team = {
 		Size = 5,
@@ -42,6 +42,16 @@ local GameConfig = {
 		SchemaVersion = 1,
 		DataStoreName = "CollectverseProfiles",
 		AutosaveIntervalSeconds = 120,
+		-- Verrou de session (voir ProfileStore) : un verrou non renouvelé depuis ce
+		-- délai est repris sans attendre (serveur arrêté brutalement). Il est renouvelé
+		-- par les sauvegardes, au plus tard tous les LockTimeoutSeconds / 3.
+		LockTimeoutSeconds = 600,
+		-- Face à un verrou actif : tentatives espacées, puis reprise forcée à la dernière
+		-- (environ 16 s d'attente, le temps qu'un ancien serveur termine sa sauvegarde).
+		LockAttempts = 5,
+		LockRetryDelaySeconds = 4,
+		-- Roblox limite les écritures sur une même clé (environ une toutes les 6 s).
+		MinSaveIntervalSeconds = 7,
 	},
 
 	Summon = {

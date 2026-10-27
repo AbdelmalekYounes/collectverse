@@ -2,6 +2,8 @@
 
 Récapitulatif final de **COLLECTVERSE: Echoes of the Rift**, selon la section 13 de la spécification. Version `0.5.0-jalon5`.
 
+> **Mise à jour 0.5.1-audit :** l'audit de stabilisation ajoute le verrou de session des sauvegardes, adapte le combat aux changements de résolution et prépare les visuels V0.2. Les tests passent à 115 (Lune) et 125 (Studio). Le détail, les risques restants et les vérifications manuelles à jour sont dans [AUDIT_V01.md](AUDIT_V01.md). Les sections ci-dessous décrivent l'état à la fin du jalon 5, sauf les limitations corrigées, signalées ci-dessous.
+
 Le critère d'achèvement est rempli : le parcours **Lancement → Hub → Collection → Équipe → Combat → Victoire → Booster → Ouverture → Mise à jour de collection** a été joué de bout en bout dans Studio, sur une place privée publiée, avec la sauvegarde DataStore active (voir [JALONS.md](JALONS.md), jalon 5).
 
 ## 1. Projet source organisé
@@ -113,10 +115,10 @@ Ces points n'ont pas pu être exécutés ici :
   - personnages en primitives ;
   - cartes à l'initiale sur dégradé ;
   - animations d'action simples (élan, bond), sans animation propre à chaque compétence.
-- **Sauvegarde** :
-  - écritures au chargement, à l'arrêt ou toutes les 120 s : un crash du serveur peut faire perdre jusqu'à 2 minutes de progression ;
-  - pas de verrou de session entre serveurs : un conflit est détecté et n'écrase rien, mais la session la plus ancienne cesse alors de sauvegarder.
-- **Interface** : la taille des plaques de combat est calculée au début du combat et ne suit pas un redimensionnement ou une rotation en cours de partie.
+- **Sauvegarde** (corrigé par l'audit 0.5.1) :
+  - verrou de session et sauvegarde rapide après un booster ou une récompense ;
+  - reste : un crash du serveur peut annuler la progression non encore écrite (au plus une sauvegarde), sans jamais rien dupliquer. Voir [AUDIT_V01.md](AUDIT_V01.md).
+- **Interface** (corrigé par l'audit 0.5.1) : la caméra et les plaques de combat suivent désormais les changements de résolution et d'orientation.
 - **Performances** : les optimisations du jalon 5 retirent des coûts identifiés dans le code, sans mesure chiffrée au MicroProfiler.
 - **Tests en Studio** : ils s'exécutent à chaque Play, jamais sur un serveur publié, et se désactivent avec `GameConfig.Debug.RunTestsInStudio`.
 - **Studio** : l'onglet Sécurité des paramètres d'expérience peut ne pas afficher ses interrupteurs (« Failed to parse secrets »). Le README donne le contournement.

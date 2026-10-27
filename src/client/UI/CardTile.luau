@@ -1,5 +1,7 @@
 -- Vignette de carte réutilisée par la collection, le Team Builder et les boosters.
--- Visuel provisoire : initiale du nom sur un dégradé à la couleur de l'élément.
+-- Illustration : image déclarée dans VisualAssets (V0.2) si elle existe, posée
+-- au-dessus du visuel provisoire (initiale du nom sur un dégradé à la couleur de
+-- l'élément), qui reste visible si l'image manque ou ne se charge pas.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -7,6 +9,7 @@ local Shared = ReplicatedStorage.Shared
 local Theme = require(Shared.Config.Theme)
 local Elements = require(Shared.Catalog.Elements)
 local Rarities = require(Shared.Catalog.Rarities)
+local VisualAssets = require(Shared.Visuals.VisualAssets)
 local Components = require(script.Parent.Components)
 local Motion = require(script.Parent.Motion)
 
@@ -71,6 +74,18 @@ function CardTile.create(card, options: Options?): TextButton
 		TextTransparency = 0.1,
 		Parent = art,
 	})
+	local illustration = VisualAssets.cardArt(card.id)
+	if illustration then
+		new("ImageLabel", {
+			Name = "Illustration",
+			BackgroundTransparency = 1,
+			Image = illustration,
+			ScaleType = Enum.ScaleType.Crop,
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = 2,
+			Parent = art,
+		}, { Components.corner(Theme.Radius.Small) })
+	end
 
 	Components.label({
 		Name = "CardName",

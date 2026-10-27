@@ -17,8 +17,10 @@ local Theme = require(Shared.Config.Theme)
 local GameConfig = require(Shared.Config.GameConfig)
 local CardCatalog = require(Shared.Catalog.CardCatalog)
 local ModelFactory = require(Shared.Visuals.ModelFactory)
+local VisualAssets = require(Shared.Visuals.VisualAssets)
 
 local Arena = require(script.Parent.Arena)
+local GraphicsQuality = require(script.Parent.Parent.State.GraphicsQuality)
 
 local SummonController = {}
 
@@ -104,6 +106,7 @@ local function buildCard(unit, footCFrame: CFrame, parent: Instance)
 	light.Color = elementColor
 	light.Brightness = 0
 	light.Range = 10
+	light.Enabled = GraphicsQuality.budget().dynamicLights
 	light.Parent = card
 
 	local surface = Instance.new("SurfaceGui")
@@ -137,6 +140,18 @@ local function buildCard(unit, footCFrame: CFrame, parent: Instance)
 	initial.TextScaled = true
 	initial.TextColor3 = Theme.Colors.Text
 	initial.Parent = canvas
+	-- Illustration V0.2 par-dessus l'initiale (qui reste en repli si l'image manque).
+	local illustration = VisualAssets.cardArt(unit.fighterId)
+	if illustration then
+		local image = Instance.new("ImageLabel")
+		image.Name = "Illustration"
+		image.BackgroundTransparency = 1
+		image.Image = illustration
+		image.ScaleType = Enum.ScaleType.Crop
+		image.Size = UDim2.fromScale(1, 0.68)
+		image.ZIndex = 2
+		image.Parent = canvas
+	end
 	local name = Instance.new("TextLabel")
 	name.BackgroundTransparency = 1
 	name.Position = UDim2.fromScale(0.05, 0.72)
@@ -174,7 +189,7 @@ local function energyBurst(footCFrame: CFrame, color: Color3, parent: Instance, 
 	emitter.Size = NumberSequence.new(0.45, 0)
 	emitter.Transparency = NumberSequence.new(0, 1)
 	emitter.Parent = attachment
-	emitter:Emit(30)
+	emitter:Emit(GraphicsQuality.budget().summonParticles)
 
 	if duration > 0 then
 		local info = TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -225,6 +240,7 @@ export type Options = { mode: Mode, tint: Color3? }
 -- Invoque un combattant à `footCFrame` et renvoie son modèle (attend la fin de l'animation).
 function SummonController.summon(unit, footCFrame: CFrame, parent: Instance, options: Options): Model
 	local model = ModelFactory.build(unit.fighterId)
+	GraphicsQuality.applyToModel(model)
 	model.Name = unit.uid
 	model:SetAttribute("Uid", unit.uid)
 	addHighlight(model, options.tint)

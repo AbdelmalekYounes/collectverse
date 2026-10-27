@@ -51,4 +51,67 @@ return function(test, expect)
 			ModelFactory.buildPlaceholder("F404")
 		end)
 	end)
+
+	test("le modèle provisoire respecte le contrat des assets finaux", function()
+		local model = ModelFactory.buildPlaceholder("F001")
+		local valid, reason = ModelFactory.validateAsset(model)
+		expect.truthy(valid, reason)
+		model:Destroy()
+	end)
+
+	-- Place un asset de test dans ReplicatedStorage.Assets.Fighters le temps d'un appel.
+	local function withAsset(asset: Model, callback: () -> ())
+		local createdAssets = ReplicatedStorage:FindFirstChild("Assets") == nil
+		local assets = ReplicatedStorage:FindFirstChild("Assets") or Instance.new("Folder")
+		assets.Name = "Assets"
+		assets.Parent = ReplicatedStorage
+		local createdFighters = assets:FindFirstChild("Fighters") == nil
+		local fighters = assets:FindFirstChild("Fighters") or Instance.new("Folder")
+		fighters.Name = "Fighters"
+		fighters.Parent = assets
+		asset.Parent = fighters
+		local ok, err = pcall(callback)
+		asset:Destroy()
+		if createdFighters then
+			fighters:Destroy()
+		end
+		if createdAssets then
+			assets:Destroy()
+		end
+		if not ok then
+			error(err, 0)
+		end
+	end
+
+	test("un asset final conforme remplace le modèle provisoire", function()
+		local asset = Instance.new("Model")
+		asset.Name = "F001"
+		local root = Instance.new("Part")
+		root.Name = "AssetRoot"
+		root.Anchored = true
+		root.Parent = asset
+		asset.PrimaryPart = root
+		withAsset(asset, function()
+			local built = ModelFactory.build("F001")
+			expect.truthy(built:FindFirstChild("AssetRoot"), "asset cloné")
+			expect.equal(built:GetAttribute("FighterId"), "F001")
+			built:Destroy()
+		end)
+	end)
+
+	test("un asset non conforme est ignoré : modèle provisoire (fallback)", function()
+		local asset = Instance.new("Model")
+		asset.Name = "F002"
+		local loose = Instance.new("Part")
+		loose.Name = "AssetBody"
+		loose.Parent = asset -- pas de PrimaryPart
+		withAsset(asset, function()
+			local valid = ModelFactory.validateAsset(asset)
+			expect.falsy(valid, "contrat non respecté")
+			local built = ModelFactory.build("F002")
+			expect.falsy(built:FindFirstChild("AssetBody"), "asset non utilisé")
+			expect.truthy(built.PrimaryPart, "modèle provisoire complet")
+			built:Destroy()
+		end)
+	end)
 end

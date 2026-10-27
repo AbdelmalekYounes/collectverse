@@ -1,8 +1,10 @@
 -- Fabrique les modèles 3D des combattants.
 --
--- Remplacement d'assets : si un Model nommé d'après l'id du combattant existe dans
--- ReplicatedStorage.Assets.Fighters (ex. Assets/Fighters/F001), il est cloné.
--- Sinon, un modèle provisoire est construit à partir de primitives.
+-- Remplacement d'assets : si un Model portant le nom donné par VisualAssets.modelName
+-- (par défaut l'id du combattant, ex. Assets/Fighters/F001) existe dans
+-- ReplicatedStorage.Assets.Fighters et respecte le contrat (validateAsset, voir
+-- VisualAssets), il est cloné. Sinon, un modèle provisoire est construit à partir
+-- de primitives : le jeu reste jouable si un asset manque ou est mal configuré.
 --
 -- Convention : le pivot du modèle (PrimaryPart "Root", invisible et ancrée) est
 -- au niveau des pieds, et l'avant du personnage regarde vers -Z (LookVector).
@@ -12,6 +14,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FighterVisuals = require(script.Parent.FighterVisuals)
+local VisualAssets = require(script.Parent.VisualAssets)
 
 local ModelFactory = {}
 
@@ -160,14 +163,50 @@ function ARCHETYPES.Support(ctx)
 	end
 end
 
+-- Contrat d'un modèle final (voir VisualAssets). Renvoie (true) ou (false, raison).
+function ModelFactory.validateAsset(model: Instance): (boolean, string?)
+	if not model:IsA("Model") then
+		return false, "n'est pas un Model"
+	end
+	local root = model.PrimaryPart
+	if not root then
+		return false, "PrimaryPart manquante"
+	end
+	if not root.Anchored then
+		return false, "PrimaryPart non ancrée"
+	end
+	for _, descendant in model:GetDescendants() do
+		if descendant:IsA("BasePart") and descendant ~= root and descendant.Anchored then
+			return false, "pièce ancrée « " .. descendant.Name .. " » : elle ne suivrait pas la PrimaryPart"
+		end
+	end
+	return true, nil
+end
+
+local warned: { [string]: boolean } = {}
+
 local function findAsset(fighterId: string): Model?
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
 	local fighters = assets and assets:FindFirstChild("Fighters")
-	local model = fighters and fighters:FindFirstChild(fighterId)
-	if model and model:IsA("Model") and model.PrimaryPart then
-		return model
+	local model = fighters and fighters:FindFirstChild(VisualAssets.modelName(fighterId))
+	if not model then
+		return nil
 	end
-	return nil
+	local valid, reason = ModelFactory.validateAsset(model)
+	if not valid then
+		if not warned[fighterId] then
+			warned[fighterId] = true
+			warn(
+				string.format(
+					"[ModelFactory] Asset de %s ignoré (%s) : modèle provisoire utilisé",
+					fighterId,
+					reason
+				)
+			)
+		end
+		return nil
+	end
+	return model :: Model
 end
 
 function ModelFactory.hasVisual(fighterId: string): boolean

@@ -221,8 +221,9 @@ def check_requires(tokens, path: Path, script_path, instances, errors: list[str]
         # local Name = <chaîne>
         if text == "local" and i + 3 < len(tokens) and tokens[i + 1][0] == "name" and tokens[i + 2][1] == "=":
             resolved, end = parse_chain(tokens, i + 3, variables, script_path)
-            # On ne retient que les chaînes entières (pas un appel de fonction ensuite)
-            if resolved is not None and end < len(tokens) and tokens[end][1] not in ("(", "[", ":"):
+            # On ne retient que les chaînes entières (pas un appel de fonction ensuite,
+            # ni une expression qui continue : `local x = a and a:FindFirstChild(...)`)
+            if resolved is not None and end < len(tokens) and tokens[end][1] not in ("(", "[", ":", "and", "or", ".."):
                 variables[tokens[i + 1][1]] = resolved
             else:
                 variables[tokens[i + 1][1]] = None

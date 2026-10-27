@@ -15,6 +15,7 @@ local Text = require(Shared.Util.Text)
 
 local Client = script.Parent.Parent.Parent
 local ClientSettings = require(Client.State.ClientSettings)
+local GraphicsQuality = require(Client.State.GraphicsQuality)
 local DataController = require(Client.Controllers.DataController)
 local UI = script.Parent.Parent
 local Components = require(UI.Components)
@@ -326,7 +327,7 @@ function BoosterScreen.build(container: Frame, _controller)
 		front.Visible = true
 		Motion.tween(holder, Theme.Motion.Normal, { Size = UDim2.fromScale(1, 1) })
 		-- Éclat aux couleurs de la rareté, à partir de Rare
-		if Rarities.Info[rarity].rank >= 2 and not instant then
+		if Rarities.Info[rarity].rank >= 2 and not instant and GraphicsQuality.budget().rarityBurst then
 			burst.BackgroundTransparency = 0.25
 			burst.Size = UDim2.fromScale(1, 1)
 			Motion.tween(burst, Theme.Motion.Slow, { BackgroundTransparency = 1, Size = UDim2.fromScale(1.35, 1.25) })

@@ -12,6 +12,8 @@ local Shared = ReplicatedStorage.Shared
 local Theme = require(Shared.Config.Theme)
 local TeamRules = require(Shared.Battle.TeamRules)
 
+local GraphicsQuality = require(script.Parent.Parent.State.GraphicsQuality)
+
 local Arena = {}
 
 local ORIGIN = Vector3.new(0, 400, -1200)
@@ -141,6 +143,7 @@ function Arena.build(): Folder
 	light.Color = Theme.Colors.Violet
 	light.Brightness = 1.5
 	light.Range = 45
+	light.Enabled = GraphicsQuality.budget().dynamicLights
 	light.Parent = glow
 
 	root.Parent = Workspace

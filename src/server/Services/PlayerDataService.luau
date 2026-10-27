@@ -6,9 +6,18 @@
 -- (persistence = "Session"). Si le chargement d'un profil échoue, la session est
 -- en lecture seule (persistence = "Unavailable") pour ne jamais écraser ses données.
 --
--- Sauvegardes : périodiques si le profil a changé, au départ du joueur et à
--- l'arrêt du serveur. Une seule sauvegarde à la fois par joueur.
+-- Verrou de session (voir ProfileStore) : un profil n'est écrit que par le serveur
+-- qui l'a chargé. Une session en lecture seule refuse toute modification : le
+-- joueur ne voit jamais une progression (booster, récompense) qui ne serait pas
+-- enregistrée.
+--
+-- Sauvegardes, une seule à la fois par joueur :
+--  - périodiques si le profil a changé, ou pour renouveler le verrou ;
+--  - rapides après un changement important (ouverture de booster, récompense),
+--    au plus une toutes les MinSaveIntervalSeconds (limite d'écriture par clé) ;
+--  - au départ du joueur et à l'arrêt du serveur, en libérant le verrou.
 
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -26,9 +35,13 @@ local RemoteGuard = require(Server.Net.RemoteGuard)
 local PlayerDataService = {}
 
 local SHUTDOWN_TIMEOUT = 25
+-- Attente maximale d'une sauvegarde de départ encore en cours sur ce serveur
+-- quand le même joueur revient aussitôt.
+local REJOIN_WAIT = 30
 
 local store
 local sessions: { [Player]: any } = {}
+local releasing: { [string]: boolean } = {} -- clés dont la sauvegarde de départ est en cours
 local savingCount = 0
 local profileUpdated: RemoteEvent
 
@@ -52,6 +65,20 @@ function PlayerDataService.getProfile(player: Player)
 	return session and session.data
 end
 
+-- Le profil peut-il être modifié ? Faux s'il est en lecture seule, en cours de
+-- départ, ou pas encore chargé. Les services l'utilisent pour refuser une action
+-- avec un message clair plutôt que de l'appliquer sans pouvoir l'enregistrer.
+function PlayerDataService.canModify(player: Player): (boolean, string?)
+	local session = sessions[player]
+	if not session then
+		return false, "Profil en cours de chargement"
+	end
+	if session.closing or not store:canModify(session) then
+		return false, "Sauvegarde indisponible : progression non modifiable pour cette session"
+	end
+	return true, nil
+end
+
 -- Vue envoyée au client : une copie, jamais la table du serveur.
 local function clientView(session)
 	local view = deepCopy(session.data)
@@ -66,50 +93,100 @@ local function notify(player: Player)
 	end
 end
 
--- Point unique de modification d'un profil. Le mutateur peut renvoyer false
--- pour signaler qu'il n'a rien changé (pas de sauvegarde ni de notification).
-function PlayerDataService.update(player: Player, mutator: (profile: any) -> boolean?): boolean
-	local session = sessions[player]
-	if not session then
+-- Sauvegarde sérialisée : attend la fin d'une sauvegarde déjà en cours pour ce profil.
+local function saveSession(session, label: string, options: ProfileStore.SaveOptions?): boolean
+	while session.saving do
+		task.wait()
+	end
+	-- Verrou libéré ou perdu pendant l'attente (ex. départ puis arrêt du serveur) :
+	-- plus rien à écrire, et ce n'est pas un échec.
+	if not store:canModify(session) then
 		return false
 	end
+	session.saving = true
+	session.lastSaveAt = os.clock()
+	savingCount += 1
+	local ok, reason = store:save(session, options)
+	savingCount -= 1
+	session.saving = false
+	if not ok then
+		warn(string.format("[Collectverse] Sauvegarde %s échouée (%s) : %s", label, session.key, tostring(reason)))
+	end
+	return ok
+end
+
+-- Sauvegarde rapide, regroupée : au plus une écriture par intervalle minimal.
+local function requestSave(session)
+	if session.saveScheduled then
+		return
+	end
+	session.saveScheduled = true
+	local delay = math.max(0, (session.lastSaveAt or -math.huge) + GameConfig.Save.MinSaveIntervalSeconds - os.clock())
+	task.delay(delay, function()
+		session.saveScheduled = false
+		if not session.closing and store:canModify(session) then
+			saveSession(session, "rapide")
+		end
+	end)
+end
+
+export type UpdateOptions = {
+	saveNow: boolean?, -- changement important : sauvegarde rapide
+}
+
+-- Point unique de modification d'un profil. Le mutateur peut renvoyer false
+-- pour signaler qu'il n'a rien changé (pas de sauvegarde ni de notification).
+-- Renvoie false sans appeler le mutateur si le profil n'est pas modifiable.
+function PlayerDataService.update(player: Player, mutator: (profile: any) -> boolean?, options: UpdateOptions?): boolean
+	if not PlayerDataService.canModify(player) then
+		return false
+	end
+	local session = sessions[player]
 	if mutator(session.data) == false then
 		return false
 	end
 	store:markDirty(session)
 	notify(player)
+	if options and options.saveNow then
+		requestSave(session)
+	end
 	return true
-end
-
--- Sauvegarde sérialisée : attend la fin d'une sauvegarde déjà en cours pour ce profil.
-local function saveSession(session, label: string)
-	while session.saving do
-		task.wait()
-	end
-	session.saving = true
-	savingCount += 1
-	local ok, reason = store:save(session)
-	savingCount -= 1
-	session.saving = false
-	if not ok and session.mode ~= "Unavailable" then
-		warn(string.format("[Collectverse] Sauvegarde %s échouée (%s) : %s", label, session.key, tostring(reason)))
-	elseif not ok then
-		warn(string.format("[Collectverse] Sauvegarde ignorée (%s) : %s", session.key, tostring(reason)))
-	end
-	return ok
 end
 
 local function onPlayerAdded(player: Player)
 	if sessions[player] then
 		return
 	end
-	local session = store:load(keyFor(player))
+	local key = keyFor(player)
+	-- Retour immédiat sur ce même serveur : on attend la fin de la sauvegarde de
+	-- départ, sinon on chargerait des données antérieures à celle-ci.
+	local waitStart = os.clock()
+	while releasing[key] and os.clock() - waitStart < REJOIN_WAIT do
+		task.wait(0.2)
+	end
+
+	local session = store:load(key)
+	-- Le chargement vient d'écrire (verrou) : compte pour la limite d'écriture par clé.
+	session.lastSaveAt = os.clock()
 	if not player.Parent then
-		return -- parti pendant le chargement : rien n'a été modifié
+		-- Parti pendant le chargement : on libère aussitôt le verrou acquis.
+		if store:canModify(session) then
+			saveSession(session, "de départ", { release = true })
+		end
+		return
 	end
 	sessions[player] = session
 	if session.mode == "Unavailable" then
 		warn(string.format("[Collectverse] Profil de %s en lecture seule : %s", player.Name, tostring(session.reason)))
+	end
+	if session.stolenFrom then
+		warn(
+			string.format(
+				"[Collectverse] Verrou du profil de %s repris au serveur %s (sans réponse)",
+				player.Name,
+				session.stolenFrom
+			)
+		)
 	end
 	for _, repair in session.repairs do
 		warn(string.format("[Collectverse] Profil de %s réparé : %s", player.Name, repair))
@@ -122,7 +199,13 @@ local function onPlayerRemoving(player: Player)
 	if not session then
 		return
 	end
-	saveSession(session, "de départ")
+	session.closing = true -- plus aucune modification à partir d'ici
+	local key = session.key
+	releasing[key] = true
+	if store:canModify(session) then
+		saveSession(session, "de départ", { release = true })
+	end
+	releasing[key] = nil
 	sessions[player] = nil
 end
 
@@ -138,6 +221,10 @@ local function setSettings(player: Player, settings: any)
 			return { ok = false, reason = "Préférences invalides" }
 		end
 		clean[key] = value
+	end
+	local modifiable, reason = PlayerDataService.canModify(player)
+	if not modifiable then
+		return { ok = false, reason = reason }
 	end
 	local updated = PlayerDataService.update(player, function(profile)
 		local changed = false
@@ -166,7 +253,17 @@ function PlayerDataService.start()
 	else
 		print("[Collectverse] Sauvegarde DataStore active")
 	end
-	store = ProfileStore.new(adapter, { retries = 3, sleep = task.wait })
+	-- JobId est vide en Studio : un identifiant unique par démarrage le remplace.
+	local jobId = if game.JobId ~= "" then game.JobId else "studio-" .. HttpService:GenerateGUID(false)
+	local save = GameConfig.Save
+	store = ProfileStore.new(adapter, {
+		retries = 3,
+		sleep = task.wait,
+		jobId = jobId,
+		lockTimeout = save.LockTimeoutSeconds,
+		lockAttempts = save.LockAttempts,
+		lockRetryDelay = save.LockRetryDelaySeconds,
+	})
 
 	RemoteGuard.bindFunction(
 		Remotes.getFunction("GetProfile"),
@@ -187,24 +284,28 @@ function PlayerDataService.start()
 	end
 	Players.PlayerRemoving:Connect(onPlayerRemoving)
 
-	-- Sauvegarde périodique des seuls profils modifiés
+	-- Sauvegarde périodique : profils modifiés, et renouvellement des verrous.
 	task.spawn(function()
 		while true do
-			task.wait(GameConfig.Save.AutosaveIntervalSeconds)
+			task.wait(save.AutosaveIntervalSeconds)
 			for _, session in sessions do
-				if session.dirty and not session.readonly then
-					task.spawn(saveSession, session, "périodique")
+				if not session.closing and store:canModify(session) then
+					if session.dirty then
+						task.spawn(saveSession, session, "périodique")
+					elseif store:needsHeartbeat(session) then
+						task.spawn(saveSession, session, "de renouvellement", { force = true })
+					end
 				end
 			end
 		end
 	end)
 
 	game:BindToClose(function()
-		for player, session in sessions do
-			task.spawn(function()
-				saveSession(session, "d'arrêt")
-				sessions[player] = nil
-			end)
+		for _, session in sessions do
+			session.closing = true
+			if store:canModify(session) then
+				task.spawn(saveSession, session, "d'arrêt", { release = true })
+			end
 		end
 		local started = os.clock()
 		task.wait()

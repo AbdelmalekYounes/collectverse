@@ -7,12 +7,17 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
 local Arena = require(script.Parent.Arena)
+local BattleLayout = require(script.Parent.BattleLayout)
 
 local BattleCamera = {}
 
-local BATTLE_FOV = 42 -- assorti au placement de Arena (voir ROW_X / ROW_Z)
-
 local saved = nil
+
+-- Champ de vision adapté au format de l'écran (voir BattleLayout.fieldOfView).
+local function applyFieldOfView(camera: Camera)
+	local size = camera.ViewportSize
+	camera.FieldOfView = BattleLayout.fieldOfView(if size.Y > 0 then size.X / size.Y else 0)
+end
 
 local function getControls()
 	local ok, controls = pcall(function()
@@ -32,7 +37,7 @@ function BattleCamera.enter()
 		}
 	end
 	camera.CameraType = Enum.CameraType.Scriptable
-	camera.FieldOfView = BATTLE_FOV
+	applyFieldOfView(camera)
 	camera.CFrame = Arena.cameraCFrame()
 
 	local controls = getControls()
@@ -42,6 +47,15 @@ function BattleCamera.enter()
 	pcall(function()
 		GuiService.TouchControlsEnabled = false
 	end)
+end
+
+-- Changement de résolution ou d'orientation pendant le combat.
+function BattleCamera.refresh()
+	local camera = Workspace.CurrentCamera
+	if saved and camera then
+		applyFieldOfView(camera)
+		camera.CFrame = Arena.cameraCFrame()
+	end
 end
 
 function BattleCamera.exit()

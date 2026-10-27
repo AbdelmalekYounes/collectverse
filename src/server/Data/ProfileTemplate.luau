@@ -44,6 +44,6 @@ function ProfileTemplate.create()
 end
 
 -- Préférences acceptées (toutes booléennes).
-ProfileTemplate.SettingKeys = { reducedMotion = true, skipSummons = true }
+ProfileTemplate.SettingKeys = { reducedMotion = true, skipSummons = true, lowEffects = true }
 
 return ProfileTemplate

@@ -11,17 +11,19 @@ local Shared = ReplicatedStorage.Shared
 local Theme = require(Shared.Config.Theme)
 local Statuses = require(Shared.Catalog.Statuses)
 
+local BattleLayout = require(script.Parent.Parent.Battle.BattleLayout)
+
 local UnitPlate = {}
 
--- Marge en pixels ajoutée à la taille en studs, pour un écran d'au moins
--- MARGIN_REFERENCE_HEIGHT pixels de haut. Sur un écran plus petit (téléphone),
--- la scène 3D rétrécit mais pas les pixels : la marge est réduite d'autant,
--- sinon les plaques se chevauchent et masquent les personnages.
-local MARGIN_REFERENCE_HEIGHT = 800
-local MARGIN_MIN_FACTOR = 0.35
+local function viewportHeight(): number
+	local camera = Workspace.CurrentCamera
+	return if camera then camera.ViewportSize.Y else 800
+end
 
-function UnitPlate.marginFactor(viewportHeight: number): number
-	return math.clamp(viewportHeight / MARGIN_REFERENCE_HEIGHT, MARGIN_MIN_FACTOR, 1)
+-- Taille calculée par BattleLayout selon la hauteur de l'écran (voir ce module).
+local function applySize(billboard: BillboardGui)
+	local studsX, pixelsX, studsY, pixelsY = BattleLayout.plateSize(viewportHeight())
+	billboard.Size = UDim2.new(studsX, pixelsX, studsY, pixelsY)
 end
 
 export type Info = {
@@ -92,9 +94,7 @@ function UnitPlate.create(model: Model, unit, parent: Instance, onClick: (uid: s
 	billboard.Name = unit.uid .. "Plate"
 	billboard.Adornee = model.PrimaryPart
 	-- Taille en studs (suit la perspective) + marge en pixels pour rester lisible de loin.
-	local camera = Workspace.CurrentCamera
-	local factor = UnitPlate.marginFactor(if camera then camera.ViewportSize.Y else MARGIN_REFERENCE_HEIGHT)
-	billboard.Size = UDim2.new(4.4, math.round(36 * factor), 2, math.round(10 * factor))
+	applySize(billboard)
 	-- Bas de la plaque environ 1,4 stud au-dessus de la tête. Décalage en espace monde :
 	-- StudsOffset suivrait l'inclinaison de la caméra et placerait la plaque ~1,4× trop haut.
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, model:GetExtentsSize().Y + 2.4, 0)
@@ -176,7 +176,14 @@ function UnitPlate.create(model: Model, unit, parent: Instance, onClick: (uid: s
 	end
 
 	update(unit, { selected = false, targetable = false, plannedText = nil, chargeMax = 100 })
-	return { billboard = billboard, update = update }
+	-- resize : à rappeler quand la résolution ou l'orientation change.
+	return {
+		billboard = billboard,
+		update = update,
+		resize = function()
+			applySize(billboard)
+		end,
+	}
 end
 
 return UnitPlate

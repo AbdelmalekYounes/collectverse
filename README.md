@@ -5,6 +5,7 @@ Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats str
 > **État : prototype V0.1 terminé (jalon 5 sur 5).** Le parcours complet a été joué dans Studio, avec la sauvegarde DataStore réelle : Hub → Collection → Équipe → Combat 3D → Victoire → Booster → Ouverture → Collection mise à jour.
 >
 > - Récapitulatif des livrables (modules, tests et résultats, vérifications manuelles, limitations) : [docs/LIVRABLES.md](docs/LIVRABLES.md).
+> - **Audit et stabilisation (version 0.5.1-audit)** : verrou de session des sauvegardes, combats adaptés à l'écran, architecture visuelle V0.2. Voir [docs/AUDIT_V01.md](docs/AUDIT_V01.md).
 > - Détail jalon par jalon : [docs/JALONS.md](docs/JALONS.md). Catalogue : [docs/CATALOGUE.md](docs/CATALOGUE.md).
 
 ## Installation
@@ -83,7 +84,18 @@ Pour ne lancer que certaines specs :
 lune run tools/lune/run-tests -- BattleEngineSpec CombatAISpec
 ```
 
-Le script charge les modules tels quels, dans une imitation minimale de l'arbre Rojo. `ModelFactorySpec` et `SummonSpec`, qui créent des Instances Roblox, restent réservées à Studio. Le code de sortie vaut 1 en cas d'échec.
+Le script charge les modules tels quels, dans une imitation minimale de l'arbre Rojo. `ModelFactorySpec` et `SummonSpec`, qui créent des Instances Roblox, restent réservées à Studio. Les fixtures partagées (tirages déterministes) sont dans `tests/Fixtures`.
+
+### Outils de test dans Studio
+
+`server/Dev/StudioDebug` n'est actif qu'en Studio (`RunService:IsStudio()`). Pendant un Play, dans la barre de commande en contexte **Serveur** :
+
+```lua
+-- Crédite 3 boosters First Rift
+game.Players:GetPlayers()[1]:SetAttribute("DebugGrantBoosters", 3)
+-- Le prochain booster donne exactement ces cartes (vrais taux, tirage impossible refusé)
+game.Players:GetPlayers()[1]:SetAttribute("DebugNextBooster", "F001,F002,F003,I001,F006")
+``` Le code de sortie vaut 1 en cas d'échec.
 
 ```bash
 python tools/static_check.py
@@ -105,6 +117,8 @@ src/shared   → ReplicatedStorage.Shared          (client + serveur)
   Net/         liste des remotes
   Visuals/     apparences des combattants, séparées du gameplay
   Util/        Freeze (gel des données), Signal (événements purs), Text (majuscules accentuées)
+  Visuals/     VisualAssets (registre V0.2 : illustrations, modèles, animations),
+               EffectsPolicy (niveau d'effets graphiques)
 src/server   → ServerScriptService.Server
   World/       HubBuilder (scène), LightingSetup
   Services/    PlayerDataService, TeamService, BattleService, BoosterService
@@ -112,13 +126,16 @@ src/server   → ServerScriptService.Server
   Data/        ProfileTemplate, ProfileSchema (versions, réparation), ProfileStore
                (chargement/sauvegarde), DataStoreAdapter, MemoryAdapter
   Logic/       BoosterLogic (tirage), Inventory (cartes, doublons, déblocages),
-               BattleRewards (issue d'un combat) — logique pure, testée avec Lune
+               BattleRewards (issue d'un combat), BattleSessions (combats en cours)
+               — logique pure, testée avec Lune
+  Dev/         StudioDebug (outils de test, Studio uniquement)
 src/client   → StarterPlayerScripts.Client
   Controllers/ UIController (navigation), ZoneController, HubAmbience,
                DataController, BattleController, BattleDirector (mise en scène),
                BattlePlanner et BattleReplay (logique pure, testées avec Lune)
-  Battle/      Arena, BattleCamera, SummonController, BattleFx (présentation 3D)
-  State/       ClientSettings (préférences de présentation)
+  Battle/      Arena, BattleCamera, SummonController, BattleFx (présentation 3D),
+               BattleLayout (mise en page selon l'écran), FighterAnimator (animations V0.2)
+  State/       ClientSettings (préférences de présentation), GraphicsQuality
   UI/          Components, CardTile, Hud, Motion, Screens/
 tests        → ServerScriptService.Tests         (Studio uniquement)
 tools        → scripts hors Roblox
@@ -132,16 +149,18 @@ Correspondance avec l'architecture cible :
 | UIController | `client/Controllers/UIController` | 1 ✅ |
 | TeamService | `server/Services/TeamService` + `shared/Battle/TeamRules` | 2 ✅ |
 | BattleEngine, AbilitySystem, CombatAI | `shared/Battle` (logique pure) + `server/Services/BattleService` | 2 ✅ |
-| PlayerDataService | `server/Services/PlayerDataService` + `server/Data/ProfileStore` | 4 ✅ |
+| PlayerDataService | `server/Services/PlayerDataService` + `server/Data/ProfileStore` (verrou de session depuis l'audit) | 4 ✅ |
 | SummonController | `client/Battle/SummonController` + `shared/Visuals/ModelFactory` | 3 ✅ |
 | Interface de combat | `client/Controllers/BattleDirector`, `BattlePlanner`, `BattleReplay` + `client/UI/BattleHud`, `UnitPlate` | 3 ✅ |
 | CollectionService → `Inventory` (nom du service Roblox évité), BoosterService | `server/Logic`, `server/Services/BoosterService` | 4 ✅ |
 | Récompenses de combat | `server/Logic/BattleRewards`, appelé par `BattleService` | 5 ✅ |
+| Sessions de combat | `server/Logic/BattleSessions`, branché par `BattleService` | Audit ✅ |
+| Assets visuels V0.2 | `shared/Visuals/VisualAssets`, `ModelFactory.validateAsset`, `client/Battle/FighterAnimator` | Audit ✅ |
 
 Principes :
 
 - **Données déclaratives.** Un combattant se définit uniquement dans `Catalog/Fighters.luau`. Les actions sont des listes d'effets (`Damage`, `Heal`, `Shield`, `Status`) que le moteur interprète de façon générique. Voir [docs/CATALOGUE.md](docs/CATALOGUE.md).
 - **Validation au démarrage.** Le serveur refuse de démarrer si `CatalogValidator` trouve une incohérence.
 - **Textes générés.** Les descriptions des actions viennent des effets réels (`AbilityText`) : elles ne peuvent pas diverger du combat.
-- **Assets remplaçables.** Placez un `Model` nommé d'après l'id (ex. `F001`) dans `ReplicatedStorage.Assets.Fighters`, avec une `PrimaryPart` aux pieds et l'avant tourné vers −Z. Il remplacera automatiquement le modèle provisoire.
+- **Assets remplaçables.** Illustrations, modèles et animations se déclarent dans `shared/Visuals/VisualAssets` (contrat détaillé en tête du fichier). Un modèle se place dans `ReplicatedStorage.Assets.Fighters` : `PrimaryPart` ancrée aux pieds, avant tourné vers −Z, autres pièces non ancrées et reliées à elle. Tout asset absent ou non conforme est remplacé par le visuel provisoire.
 - **Serveur autoritaire** : le client n'envoie que des intentions, validées côté serveur (types, valeurs, fréquence, état).

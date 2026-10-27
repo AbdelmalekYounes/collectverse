@@ -9,6 +9,7 @@ Parcours cible : **Lancement → Hub → Collection → Équipe → Combat → V
 | 3 | Invocations carte → personnage 3D, interface de combat | ✅ Tests Studio OK, rendu validé sur captures |
 | 4 | Boosters, collection, sauvegarde, récompenses | ✅ Logique testée (Lune), sauvegarde DataStore vérifiée sur 2 sessions Studio |
 | 5 | Tests, corrections, performances, documentation | ✅ Parcours complet vérifié dans Studio, Lune 87/87, Studio 94/94 |
+| Audit | Stabilisation V0.1 (0.5.1) : sauvegardes, gameplay, mobile, visuels V0.2 | ✅ Lune 115/115, Studio 125/125 — voir [AUDIT_V01.md](AUDIT_V01.md) |
 
 Le récapitulatif final des livrables est dans [LIVRABLES.md](LIVRABLES.md).
 

@@ -8,6 +8,7 @@ local ClientSettings = {}
 local values = {
 	reducedMotion = false, -- animations d'interface instantanées
 	skipSummons = false, -- invocations de combat raccourcies (jalon 3)
+	lowEffects = false, -- effets graphiques réduits (appareils peu puissants)
 }
 
 -- Respecte le réglage d'accessibilité Roblox « Réduire les animations » s'il existe.
