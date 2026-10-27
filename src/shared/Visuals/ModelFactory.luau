@@ -183,7 +183,57 @@ function ModelFactory.validateAsset(model: Instance): (boolean, string?)
 	return true, nil
 end
 
+-- Nature de l'articulation d'un modèle. Seuls « Skinned » (os dans un maillage
+-- riggé) et « Motor6D » (articulations) peuvent jouer des animations Roblox, et
+-- seulement avec un Animator. Des pièces simplement soudées (« Welded », comme le
+-- modèle provisoire) ne forment PAS un personnage riggé.
+export type RigReport = {
+	kind: string, -- "Skinned" | "Motor6D" | "Welded" | "Static"
+	bones: number,
+	motors: number,
+	welds: number,
+	animator: boolean,
+	animatable: boolean,
+}
+
+function ModelFactory.describeRig(model: Instance): RigReport
+	local bones, motors, welds, animator = 0, 0, 0, false
+	for _, descendant in model:GetDescendants() do
+		if descendant:IsA("Bone") then
+			bones += 1
+		elseif descendant:IsA("Motor6D") then
+			motors += 1
+		elseif descendant:IsA("WeldConstraint") or descendant:IsA("Weld") then
+			welds += 1
+		elseif descendant:IsA("Animator") then
+			local holder = descendant.Parent
+			if holder and (holder:IsA("AnimationController") or holder:IsA("Humanoid")) then
+				animator = true
+			end
+		end
+	end
+	local kind = if bones > 0 then "Skinned" elseif motors > 0 then "Motor6D" elseif welds > 0 then "Welded" else "Static"
+	return {
+		kind = kind,
+		bones = bones,
+		motors = motors,
+		welds = welds,
+		animator = animator,
+		animatable = animator and (bones > 0 or motors > 0),
+	}
+end
+
 local warned: { [string]: boolean } = {}
+
+-- Des animations sont-elles déclarées pour ce combattant ?
+local function declaresAnimations(fighterId: string): boolean
+	for _, kind in VisualAssets.AnimationKinds do
+		if VisualAssets.animation(fighterId, kind) then
+			return true
+		end
+	end
+	return false
+end
 
 local function findAsset(fighterId: string): Model?
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
@@ -205,6 +255,22 @@ local function findAsset(fighterId: string): Model?
 			)
 		end
 		return nil
+	end
+	-- Asset utilisable, mais ses animations déclarées ne pourront pas jouer : on le
+	-- signale (les mouvements génériques prendront le relais).
+	if declaresAnimations(fighterId) and not ModelFactory.describeRig(model).animatable then
+		local key = fighterId .. ":rig"
+		if not warned[key] then
+			warned[key] = true
+			warn(
+				string.format(
+					"[ModelFactory] %s : animations déclarées mais modèle non animable (rig %s, Animator %s)",
+					fighterId,
+					ModelFactory.describeRig(model).kind,
+					tostring(ModelFactory.describeRig(model).animator)
+				)
+			)
+		end
 	end
 	return model :: Model
 end

@@ -1,9 +1,15 @@
 -- Écran Boosters : booster First Rift, probabilités exactes et ouverture.
 -- Les taux affichés sont calculés à partir de la même configuration que le tirage
--- serveur (BoosterOdds). Le tirage est fait par le serveur ; le client ne fait
--- que révéler les 5 cartes reçues, une par une (révélation complète possible).
+-- serveur (BoosterOdds). Le tirage est fait par le serveur AVANT l'animation ; le
+-- client ne fait que mettre en scène les 5 cartes reçues (RevealTimeline) :
+-- le paquet s'illumine et s'ouvre, les dos (tous identiques) sont distribués, puis
+-- chaque carte est retournée. Une carte Épique ou Légendaire est mise en lumière
+-- seulement APRÈS son retournement : rien ne suggère une rareté à l'avance.
+-- « Tout révéler » termine tout instantanément. Animations réduites : déroulé
+-- raccourci et sans mouvement ; effets réduits : ni éclair, ni rayons, ni éclats.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage.Shared
 local Theme = require(Shared.Config.Theme)
@@ -21,6 +27,7 @@ local UI = script.Parent.Parent
 local Components = require(UI.Components)
 local CardTile = require(UI.CardTile)
 local Motion = require(UI.Motion)
+local RevealTimeline = require(UI.RevealTimeline)
 
 local new = Components.new
 
@@ -30,34 +37,147 @@ local BoosterScreen = {
 	accent = Theme.Colors.Gold,
 }
 
-local function packVisual(parent: Instance, booster)
-	local pack = new("Frame", {
-		Name = "Pack",
-		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 0),
-		Size = UDim2.fromOffset(190, 266),
+local PACK_SIZE = Vector2.new(190, 266)
+
+-- Emblème de la faille : deux anneaux et un cristal central.
+local function riftEmblem(parent: Instance, size: number, position: UDim2, zIndex: number)
+	local emblem = new("Frame", {
+		Name = "Emblem",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = position,
+		Size = UDim2.fromOffset(size, size),
+		BackgroundTransparency = 1,
+		ZIndex = zIndex,
+		Parent = parent,
+	})
+	for _, ring in
+		{
+			{ scale = 1, color = Theme.Colors.Gold, transparency = 0.15 },
+			{
+				scale = 0.72,
+				color = Theme.Colors.Cyan,
+				transparency = 0.35,
+			},
+		}
+	do
+		new("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(ring.scale, ring.scale),
+			BackgroundTransparency = 1,
+			ZIndex = zIndex,
+			Parent = emblem,
+		}, { Components.corner(Theme.Radius.Pill), Components.stroke(ring.color, 2, ring.transparency) })
+	end
+	new("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(0.3, 0.3),
+		Rotation = 45,
 		BackgroundColor3 = Theme.Colors.White,
+		ZIndex = zIndex,
+		Parent = emblem,
+	}, { Components.gradient(Theme.Colors.Cyan, Theme.Colors.Violet, 45) })
+	return emblem
+end
+
+-- Reflet qui balaie une surface (figé si animations réduites, absent si effets réduits).
+local function sheen(parent: GuiObject, zIndex: number)
+	if not GraphicsQuality.budget().rarityBurst then
+		return
+	end
+	local frame = new("Frame", {
+		Name = "Sheen",
+		BackgroundColor3 = Theme.Colors.White,
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = zIndex,
+		Parent = parent,
+	}, { Components.corner(Theme.Radius.Large) })
+	local gradient = new("UIGradient", {
+		Rotation = 20,
+		Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.45, 1),
+			NumberSequenceKeypoint.new(0.5, 0.82),
+			NumberSequenceKeypoint.new(0.55, 1),
+			NumberSequenceKeypoint.new(1, 1),
+		}),
+		Offset = Vector2.new(-0.7, 0),
+		Parent = frame,
+	})
+	if ClientSettings.get("reducedMotion") then
+		gradient.Offset = Vector2.new(0.15, 0)
+		return
+	end
+	local info = TweenInfo.new(2.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, false, 2)
+	TweenService:Create(gradient, info, { Offset = Vector2.new(0.9, 0) }):Play()
+end
+
+-- Face du paquet, réutilisée dans la colonne et pour l'animation d'ouverture.
+local function packFace(parent: Instance, booster, zIndex: number): Frame
+	local pack = new("Frame", {
+		Name = "PackFace",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = Theme.Colors.White,
+		ZIndex = zIndex,
 		Parent = parent,
 	}, {
 		Components.corner(Theme.Radius.Large),
 		Components.gradient(Theme.Colors.Violet, Theme.Colors.Background, 160),
-		Components.stroke(Theme.Colors.Gold, 2, 0.1),
-		Components.padding(16),
+		new("UIStroke", {
+			Name = "PackStroke",
+			Color = Theme.Colors.White,
+			Thickness = 2.5,
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		}, {
+			new("UIGradient", {
+				Rotation = 90,
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromHex("#FFF4D1")),
+					ColorSequenceKeypoint.new(0.5, Theme.Colors.Gold),
+					ColorSequenceKeypoint.new(1, Color3.fromHex("#A8711C")),
+				}),
+			}),
+		}),
 	})
+	-- Bandeau supérieur « COLLECTVERSE »
+	new("Frame", {
+		Name = "Band",
+		Position = UDim2.fromScale(0, 0.06),
+		Size = UDim2.fromScale(1, 0.09),
+		BackgroundColor3 = Theme.Colors.Background,
+		BackgroundTransparency = 0.25,
+		ZIndex = zIndex,
+		Parent = pack,
+	}, {
+		Components.label({
+			Text = "COLLECTVERSE",
+			FontFace = Theme.Fonts.Title,
+			TextScaled = true,
+			TextColor3 = Theme.Colors.Gold,
+			TextXAlignment = Enum.TextXAlignment.Center,
+			Size = UDim2.fromScale(1, 0.7),
+			Position = UDim2.fromScale(0, 0.15),
+			ZIndex = zIndex,
+		}),
+	})
+	riftEmblem(pack, 84, UDim2.fromScale(0.5, 0.36), zIndex)
 	Components.label({
 		Text = Text.upper(booster.name),
 		FontFace = Theme.Fonts.Title,
 		TextSize = Theme.TextSize.Heading,
 		TextXAlignment = Enum.TextXAlignment.Center,
+		Position = UDim2.fromScale(0, 0.56),
 		Size = UDim2.new(1, 0, 0, 28),
-		Position = UDim2.fromOffset(0, 70),
+		ZIndex = zIndex,
 		Parent = pack,
 	})
 	Components.label({
 		Text = string.format("%d cartes", booster.cardCount),
 		TextColor3 = Theme.Colors.Cyan,
 		TextXAlignment = Enum.TextXAlignment.Center,
-		Position = UDim2.fromOffset(0, 104),
+		Position = UDim2.fromScale(0, 0.68),
+		ZIndex = zIndex,
 		Parent = pack,
 	})
 	Components.label({
@@ -66,9 +186,12 @@ local function packVisual(parent: Instance, booster)
 		TextSize = Theme.TextSize.Caption,
 		TextXAlignment = Enum.TextXAlignment.Center,
 		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.fromScale(0, 1),
+		Position = UDim2.new(0, 0, 1, -12),
+		ZIndex = zIndex,
 		Parent = pack,
 	})
+	sheen(pack, zIndex + 1)
+	return pack
 end
 
 local function oddsTable(parent: Instance, booster)
@@ -149,34 +272,43 @@ end
 
 local CARD_SIZE = Vector2.new(116, 164)
 local CARD_GAP = 14
+local SPOTLIGHT_TEXT = {
+	Epic = "ÉPIQUE",
+	Legendary = "LÉGENDAIRE !",
+}
 
+-- Dos de carte : identique pour toutes les cartes (ne révèle aucune rareté).
 local function cardBack(parent: Instance): Frame
 	local back = new("Frame", {
 		Name = "Back",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = Theme.Colors.White,
+		ZIndex = 6,
 		Parent = parent,
 	}, {
 		Components.corner(Theme.Radius.Medium),
 		Components.gradient(Theme.Colors.Violet, Theme.Colors.Background, 150),
-		Components.stroke(Theme.Colors.Gold, 1.5, 0.2),
+		Components.stroke(Theme.Colors.Gold, 2, 0.15),
 	})
-	Components.label({
-		Text = "?",
-		FontFace = Theme.Fonts.Title,
-		TextSize = 44,
-		TextXAlignment = Enum.TextXAlignment.Center,
-		Size = UDim2.fromScale(1, 0.8),
+	new("Frame", {
+		Name = "Inset",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.new(1, -12, 1, -12),
+		BackgroundTransparency = 1,
+		ZIndex = 6,
 		Parent = back,
-	})
+	}, { Components.corner(Theme.Radius.Small), Components.stroke(Theme.Colors.Gold, 1, 0.6) })
+	riftEmblem(back, 52, UDim2.fromScale(0.5, 0.42), 6)
 	Components.label({
 		Text = "FIRST RIFT",
 		FontFace = Theme.Fonts.Title,
 		TextSize = 10,
 		TextColor3 = Theme.Colors.Gold,
 		TextXAlignment = Enum.TextXAlignment.Center,
-		Position = UDim2.fromScale(0, 0.8),
-		Size = UDim2.fromScale(1, 0.14),
+		Position = UDim2.fromScale(0, 0.76),
+		Size = UDim2.fromScale(1, 0.12),
+		ZIndex = 6,
 		Parent = back,
 	})
 	return back
@@ -190,7 +322,7 @@ local function badge(parent: Instance, text: string, color: Color3)
 		Size = UDim2.fromOffset(0, 20),
 		AutomaticSize = Enum.AutomaticSize.X,
 		BackgroundColor3 = color,
-		ZIndex = 4,
+		ZIndex = 9,
 		Parent = parent,
 	}, {
 		Components.corner(Theme.Radius.Pill),
@@ -203,9 +335,43 @@ local function badge(parent: Instance, text: string, color: Color3)
 			AutomaticSize = Enum.AutomaticSize.X,
 			Size = UDim2.fromScale(0, 1),
 			TextWrapped = false,
-			ZIndex = 4,
+			ZIndex = 9,
 		}),
 	})
+end
+
+-- Rayons de lumière derrière une carte mise en lumière.
+local function rays(parent: Instance, color: Color3): Frame
+	local holder = new("Frame", {
+		Name = "Rays",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(2.4, 2.4 * CARD_SIZE.X / CARD_SIZE.Y),
+		BackgroundTransparency = 1,
+		ZIndex = 5,
+		Parent = parent,
+	}, { new("UIAspectRatioConstraint", { AspectRatio = 1 }) })
+	for index = 0, 5 do
+		new("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.07),
+			Rotation = index * 30,
+			BackgroundColor3 = color,
+			BorderSizePixel = 0,
+			ZIndex = 5,
+			Parent = holder,
+		}, {
+			new("UIGradient", {
+				Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(0.5, 0.45),
+					NumberSequenceKeypoint.new(1, 1),
+				}),
+			}),
+		})
+	end
+	return holder
 end
 
 function BoosterScreen.build(container: Frame, _controller)
@@ -223,7 +389,15 @@ function BoosterScreen.build(container: Frame, _controller)
 		Size = UDim2.new(0.38, -8, 1, 0),
 		Parent = container,
 	})
-	packVisual(left, booster)
+	local packHolder = new("Frame", {
+		Name = "Pack",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 0),
+		Size = UDim2.fromOffset(PACK_SIZE.X, PACK_SIZE.Y),
+		BackgroundTransparency = 1,
+		Parent = left,
+	})
+	packFace(packHolder, booster, 1)
 	local openButton
 	local countLabel = Components.label({
 		TextColor3 = Theme.Colors.Gold,
@@ -260,6 +434,40 @@ function BoosterScreen.build(container: Frame, _controller)
 		Position = UDim2.fromOffset(0, 6),
 		Size = UDim2.new(1, 0, 0, 24),
 		ZIndex = 5,
+		Parent = reveal,
+	})
+
+	-- Paquet animé au centre (CanvasGroup : il peut s'effacer d'un bloc)
+	local packStage = new("CanvasGroup", {
+		Name = "PackStage",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0.5, 0, 0, 52 + CARD_SIZE.Y / 2),
+		Size = UDim2.fromOffset(PACK_SIZE.X * 0.7, PACK_SIZE.Y * 0.7),
+		BackgroundTransparency = 1,
+		ZIndex = 7,
+		Parent = reveal,
+	})
+	local packScale = new("UIScale", { Parent = packStage })
+	local stagedPack = packFace(packStage, booster, 7)
+	local stagedStroke = stagedPack:FindFirstChild("PackStroke") :: UIStroke
+	local flash = new("Frame", {
+		Name = "Flash",
+		BackgroundColor3 = Theme.Colors.White,
+		BackgroundTransparency = 1,
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = 9,
+		Parent = reveal,
+	}, { Components.corner(Theme.Radius.Medium) })
+
+	local banner = Components.label({
+		Name = "Spotlight",
+		FontFace = Theme.Fonts.Title,
+		TextSize = Theme.TextSize.Title,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextTransparency = 1,
+		Position = UDim2.fromOffset(0, 26),
+		Size = UDim2.new(1, 0, 0, 24),
+		ZIndex = 9,
 		Parent = reveal,
 	})
 	local cardRow = new("Frame", {
@@ -309,6 +517,7 @@ function BoosterScreen.build(container: Frame, _controller)
 	end
 	local refresh
 
+	-- Attente interrompue dès que le joueur demande à tout révéler.
 	local function pause(seconds: number)
 		local elapsed = 0
 		while elapsed < seconds and not state.skip do
@@ -316,22 +525,63 @@ function BoosterScreen.build(container: Frame, _controller)
 		end
 	end
 
+	local function effectsAllowed(): boolean
+		return GraphicsQuality.budget().rarityBurst
+	end
+
 	-- Retourne une carte : la face arrière se replie, la face avant se déplie.
 	local function flip(slot, instant: boolean)
-		local holder, back, front, burst, rarity = slot.holder, slot.back, slot.front, slot.burst, slot.rarity
+		if slot.flipped then
+			return
+		end
+		slot.flipped = true
+		slot.scale.Scale = 1
 		if not instant and not ClientSettings.get("reducedMotion") then
-			Motion.tween(holder, Theme.Motion.Fast, { Size = UDim2.fromScale(0, 1) })
+			Motion.tween(slot.holder, Theme.Motion.Fast, { Size = UDim2.fromScale(0, 1) })
 			task.wait(Theme.Motion.Fast.Time)
 		end
-		back.Visible = false
-		front.Visible = true
-		Motion.tween(holder, Theme.Motion.Normal, { Size = UDim2.fromScale(1, 1) })
-		-- Éclat aux couleurs de la rareté, à partir de Rare
-		if Rarities.Info[rarity].rank >= 2 and not instant and GraphicsQuality.budget().rarityBurst then
-			burst.BackgroundTransparency = 0.25
-			burst.Size = UDim2.fromScale(1, 1)
-			Motion.tween(burst, Theme.Motion.Slow, { BackgroundTransparency = 1, Size = UDim2.fromScale(1.35, 1.25) })
+		slot.back.Visible = false
+		slot.front.Visible = true
+		if instant then
+			slot.holder.Size = UDim2.fromScale(1, 1)
+		else
+			Motion.tween(slot.holder, Theme.Motion.Normal, { Size = UDim2.fromScale(1, 1) })
 		end
+		-- Éclat aux couleurs de la rareté, à partir de Rare (après le retournement)
+		if Rarities.Info[slot.rarity].rank >= 2 and not instant and effectsAllowed() then
+			slot.burst.BackgroundTransparency = 0.25
+			slot.burst.Size = UDim2.fromScale(1, 1)
+			Motion.tween(
+				slot.burst,
+				Theme.Motion.Slow,
+				{ BackgroundTransparency = 1, Size = UDim2.fromScale(1.35, 1.25) }
+			)
+		end
+	end
+
+	-- Mise en lumière d'une carte déjà retournée (Épique, Légendaire).
+	local function spotlight(slot, duration: number)
+		local color = Theme.Rarity[slot.rarity]
+		banner.Text = SPOTLIGHT_TEXT[slot.rarity] or ""
+		banner.TextColor3 = color
+		banner.TextTransparency = 0
+		local beams
+		if effectsAllowed() then
+			beams = rays(slot.frame, color)
+			if not ClientSettings.get("reducedMotion") then
+				local info = TweenInfo.new(math.max(duration, 0.3), Enum.EasingStyle.Linear)
+				TweenService:Create(beams, info, { Rotation = 40 }):Play()
+			end
+		end
+		if not ClientSettings.get("reducedMotion") then
+			slot.pop.Scale = 1.12
+			Motion.tween(slot.pop, Theme.Motion.Slow, { Scale = 1 })
+		end
+		pause(duration)
+		if beams then
+			beams:Destroy()
+		end
+		Motion.tween(banner, Theme.Motion.Normal, { TextTransparency = 1 })
 	end
 
 	local function finishReveal(grants)
@@ -355,6 +605,7 @@ function BoosterScreen.build(container: Frame, _controller)
 			summary.Text = "Des doublons : ils sont conservés dans votre collection."
 			summary.TextColor3 = Theme.Colors.TextMuted
 		end
+		banner.TextTransparency = 1
 		skipButton.Visible = false
 		againButton.Visible = true
 		doneButton.Visible = true
@@ -362,19 +613,13 @@ function BoosterScreen.build(container: Frame, _controller)
 		refresh()
 	end
 
-	local function startReveal(grants)
+	-- Construit les emplacements (dos visibles, faces cachées) pour les cartes reçues.
+	local function buildSlots(grants)
 		for _, child in cardRow:GetChildren() do
 			if child:IsA("GuiObject") then
 				child:Destroy()
 			end
 		end
-		summary.Text = ""
-		state.skip = false
-		state.revealing = true
-		skipButton.Visible = true
-		againButton.Visible = false
-		doneButton.Visible = false
-
 		local slots = {}
 		for index, grant in grants do
 			local card = CardCatalog.get(grant.id)
@@ -385,6 +630,7 @@ function BoosterScreen.build(container: Frame, _controller)
 				ZIndex = 5,
 				Parent = cardRow,
 			})
+			local scale = new("UIScale", { Scale = 0, Parent = frame })
 			local burst = new("Frame", {
 				Name = "Burst",
 				AnchorPoint = Vector2.new(0.5, 0.5),
@@ -404,8 +650,9 @@ function BoosterScreen.build(container: Frame, _controller)
 				ZIndex = 6,
 				Parent = frame,
 			})
+			local pop = new("UIScale", { Parent = holder })
 			local back = cardBack(holder)
-			local front = CardTile.create(card, { quantity = grant.count })
+			local front = CardTile.create(card, { quantity = grant.count, sizeClass = "Standard" })
 			front.Size = UDim2.fromScale(1, 1)
 			front.Visible = false
 			front.Parent = holder
@@ -414,18 +661,111 @@ function BoosterScreen.build(container: Frame, _controller)
 			elseif grant.isNew then
 				badge(front, "NOUVEAU", Theme.Colors.Cyan)
 			end
-			slots[index] = { holder = holder, back = back, front = front, burst = burst, rarity = card.rarity }
+			slots[index] = {
+				frame = frame,
+				scale = scale,
+				holder = holder,
+				pop = pop,
+				back = back,
+				front = front,
+				burst = burst,
+				rarity = card.rarity,
+				flipped = false,
+			}
 		end
+		return slots
+	end
 
-		showReveal(true)
-		task.spawn(function()
-			local gap = if ClientSettings.get("reducedMotion") then 0.15 else 0.55
-			for index, slot in slots do
-				pause(if index == 1 then 0.35 else gap)
-				if not reveal.Parent then
-					return
+	local function playStep(step, slots)
+		if step.kind == "Charge" then
+			-- Le paquet se charge d'énergie : léger tremblement et contour plus vif.
+			if step.duration > 0 then
+				Motion.tween(stagedStroke, TweenInfo.new(step.duration), { Thickness = 5 })
+				local swings = 4
+				for swing = 1, swings do
+					if state.skip then
+						break
+					end
+					local angle = if swing % 2 == 1 then 3 else -3
+					Motion.tween(packStage, TweenInfo.new(step.duration / swings), { Rotation = angle })
+					pause(step.duration / swings)
 				end
-				flip(slot, state.skip)
+				packStage.Rotation = 0
+			end
+		elseif step.kind == "Burst" then
+			-- Ouverture : éclair (effets complets) et le paquet s'efface en grandissant.
+			if effectsAllowed() then
+				flash.BackgroundTransparency = 0.55
+				Motion.tween(flash, TweenInfo.new(step.duration + 0.25), { BackgroundTransparency = 1 })
+			end
+			local info = TweenInfo.new(math.max(step.duration, 0.05), Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+			Motion.tween(packScale, info, { Scale = 1.35 })
+			Motion.tween(packStage, info, { GroupTransparency = 1 })
+			pause(step.duration)
+			packStage.Visible = false
+		elseif step.kind == "Deal" then
+			-- Distribution des dos, tous identiques, dans l'ordre de révélation.
+			local per = if #slots > 0 then step.duration / #slots else 0
+			for _, slot in slots do
+				if state.skip then
+					break
+				end
+				Motion.tween(slot.scale, Theme.Motion.Normal, { Scale = 1 })
+				pause(per)
+			end
+		elseif step.kind == "Flip" then
+			pause(step.duration)
+			if not state.skip then
+				flip(slots[step.index], false)
+			end
+		elseif step.kind == "Spotlight" then
+			if not state.skip and step.duration > 0 then
+				spotlight(slots[step.index], step.duration)
+			end
+		end
+	end
+
+	local function startReveal(grants)
+		summary.Text = ""
+		banner.TextTransparency = 1
+		state.skip = false
+		state.revealing = true
+		skipButton.Visible = true
+		againButton.Visible = false
+		doneButton.Visible = false
+
+		local slots = buildSlots(grants)
+		packStage.Visible = true
+		packStage.GroupTransparency = 0
+		packStage.Rotation = 0
+		packScale.Scale = 1
+		stagedStroke.Thickness = 2.5
+		flash.BackgroundTransparency = 1
+		showReveal(true)
+
+		local rarities = {}
+		for index, slot in slots do
+			rarities[index] = slot.rarity
+		end
+		local steps = RevealTimeline.build(rarities, { reducedMotion = ClientSettings.get("reducedMotion") })
+
+		task.spawn(function()
+			for _, step in steps do
+				if state.skip or not reveal.Parent then
+					break
+				end
+				playStep(step, slots)
+			end
+			if not reveal.Parent then
+				return
+			end
+			-- Fin normale ou « Tout révéler » : état final complet, sans animation.
+			packStage.Visible = false
+			flash.BackgroundTransparency = 1
+			for _, slot in slots do
+				slot.scale.Scale = 1
+				slot.pop.Scale = 1
+				flip(slot, true)
 			end
 			finishReveal(grants)
 		end)

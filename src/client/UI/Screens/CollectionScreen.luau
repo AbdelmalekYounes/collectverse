@@ -181,6 +181,20 @@ local function renderDetail(content: Frame, card, maxima, owned: number)
 		return order
 	end
 
+	-- Grande carte de présentation (classe de taille Large, même composant que la grille).
+	local showcase = new("Frame", {
+		Name = "Showcase",
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 262),
+		LayoutOrder = -1,
+		Parent = content,
+	})
+	local large = CardTile.create(card, { sizeClass = "Large", owned = owned > 0, quantity = owned })
+	large.AnchorPoint = Vector2.new(0.5, 0)
+	large.Position = UDim2.fromScale(0.5, 0)
+	large.Size = UDim2.fromOffset(180, 254)
+	large.Parent = showcase
+
 	Components.label({
 		Text = card.name,
 		FontFace = Theme.Fonts.Title,

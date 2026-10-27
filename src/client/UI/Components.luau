@@ -88,7 +88,7 @@ function Components.gradient(top: Color3, bottom: Color3, rotation: number?): UI
 end
 
 function Components.label(props: { [string]: any }?): TextLabel
-	return new(
+	local label = new(
 		"TextLabel",
 		merge({
 			-- Sans cela, un libellé jamais rempli affiche le texte par défaut de Roblox (« Label »).
@@ -103,6 +103,13 @@ function Components.label(props: { [string]: any }?): TextLabel
 			Size = UDim2.new(1, 0, 0, 20),
 		}, props)
 	)
+	-- L'ordre d'application des propriétés n'est pas garanti, et affecter TextSize
+	-- (valeur par défaut ci-dessus) après TextScaled désactive ce dernier : on le
+	-- réapplique en dernier.
+	if props and props.TextScaled then
+		label.TextScaled = true
+	end
+	return label
 end
 
 -- Paragraphe dont la hauteur suit le texte.

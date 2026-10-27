@@ -6,6 +6,7 @@ Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats str
 >
 > - Récapitulatif des livrables (modules, tests et résultats, vérifications manuelles, limitations) : [docs/LIVRABLES.md](docs/LIVRABLES.md).
 > - **Audit et stabilisation (version 0.5.1-audit)** : verrou de session des sauvegardes, combats adaptés à l'écran, architecture visuelle V0.2. Voir [docs/AUDIT_V01.md](docs/AUDIT_V01.md).
+> - **V0.2.1 — fondations visuelles (version 0.6.0-visual)** : cartes premium (cadres par rareté, variantes, holo), ouverture de booster retravaillée, personnage pilote Kael et pipeline Blender → Roblox. Voir [docs/V02_VISUAL_PIPELINE.md](docs/V02_VISUAL_PIPELINE.md).
 > - Détail jalon par jalon : [docs/JALONS.md](docs/JALONS.md). Catalogue : [docs/CATALOGUE.md](docs/CATALOGUE.md).
 
 ## Installation
@@ -117,7 +118,8 @@ src/shared   → ReplicatedStorage.Shared          (client + serveur)
   Net/         liste des remotes
   Visuals/     apparences des combattants, séparées du gameplay
   Util/        Freeze (gel des données), Signal (événements purs), Text (majuscules accentuées)
-  Visuals/     VisualAssets (registre V0.2 : illustrations, modèles, animations),
+  Visuals/     VisualAssets (registre V0.2 : illustrations, variantes, modèles, animations),
+               CardStyle (cadres par rareté, tailles, mise en page des cartes),
                EffectsPolicy (niveau d'effets graphiques)
 src/server   → ServerScriptService.Server
   World/       HubBuilder (scène), LightingSetup
@@ -136,7 +138,8 @@ src/client   → StarterPlayerScripts.Client
   Battle/      Arena, BattleCamera, SummonController, BattleFx (présentation 3D),
                BattleLayout (mise en page selon l'écran), FighterAnimator (animations V0.2)
   State/       ClientSettings (préférences de présentation), GraphicsQuality
-  UI/          Components, CardTile, Hud, Motion, Screens/
+  UI/          Components, CardTile (carte premium), RevealTimeline (ouverture des boosters),
+               Hud, Motion, Screens/
 tests        → ServerScriptService.Tests         (Studio uniquement)
 tools        → scripts hors Roblox
 ```

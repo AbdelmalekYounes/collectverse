@@ -5,6 +5,7 @@
 -- modèle en primitives (ModelFactory), mouvements génériques (BattleFx).
 --
 --   F001 = {
+--       variant = "Holo",                     -- variante visuelle (CardStyle.Variants)
 --       art = "rbxassetid://123456",          -- illustration de carte (ImageLabel)
 --       model = "F001_Kael",                  -- Model dans ReplicatedStorage.Assets.Fighters
 --       animations = {                         -- AnimationIds, joués par FighterAnimator
@@ -25,6 +26,7 @@
 -- Ce module ne fait que décrire : aucune requête réseau, utilisable par les tests.
 
 local Freeze = require(script.Parent.Parent.Util.Freeze)
+local CardStyle = require(script.Parent.CardStyle)
 
 local VisualAssets = {}
 
@@ -39,8 +41,15 @@ VisualAssets.ActionAnimation = Freeze.deep({
 	defend = "Defend",
 })
 
--- Aucun asset final pour l'instant : tout passe par le fallback.
-local Cards: { [string]: any } = {}
+-- Aucun asset final pour l'instant : illustrations, modèles et animations passent
+-- par le fallback. Aucun Asset ID n'est inventé : chaque champ sera rempli avec
+-- l'identifiant réel obtenu à l'importation dans Roblox (voir V02_VISUAL_PIPELINE).
+local Cards: { [string]: any } = {
+	-- Personnage pilote V0.2 : carte premium à reflet holographique (variante
+	-- d'édition, la rareté affichée reste Commune). Ajouter ici, une fois importés :
+	-- art = "rbxassetid://…", model = "F001_Kael", animations = { … }.
+	F001 = { variant = "Holo" },
+}
 
 VisualAssets.Cards = Freeze.deep(Cards)
 
@@ -54,6 +63,12 @@ end
 function VisualAssets.cardArt(cardId: string): string?
 	local data = entry(cardId)
 	return data and data.art
+end
+
+-- Variante visuelle de la carte (par défaut "Standard").
+function VisualAssets.variant(cardId: string): string
+	local data = entry(cardId)
+	return data and data.variant or "Standard"
 end
 
 -- Nom du Model à chercher dans ReplicatedStorage.Assets.Fighters (par défaut l'id).
@@ -86,6 +101,9 @@ function VisualAssets.validate(isKnownCard: (string) -> boolean, cards: { [strin
 		if type(data) ~= "table" then
 			fail("entrée invalide")
 			continue
+		end
+		if data.variant ~= nil and not CardStyle.Variants[data.variant] then
+			fail("variante inconnue " .. tostring(data.variant))
 		end
 		if data.art ~= nil and (type(data.art) ~= "string" or not string.match(data.art, ASSET_PATTERN)) then
 			fail("illustration invalide (attendu rbxassetid://<nombre>)")
