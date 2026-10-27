@@ -88,6 +88,7 @@ function TeamScreen.build(container: Frame, _controller)
 		messageIsError = false,
 		saving = false,
 		loaded = false,
+		visible = false,
 	}
 
 	-- Colonne gauche : emplacements
@@ -318,8 +319,11 @@ function TeamScreen.build(container: Frame, _controller)
 		Components.setButtonEnabled(saveButton, valid and not unchanged and not state.saving)
 	end
 
+	-- Écran fermé : inutile de reconstruire les vignettes, onOpen recharge tout.
 	DataController.Changed:Connect(function()
-		render()
+		if state.visible then
+			render()
+		end
 	end)
 
 	state.reload = function()
@@ -332,7 +336,12 @@ function TeamScreen.build(container: Frame, _controller)
 end
 
 function TeamScreen.onOpen(state)
+	state.visible = true
 	state.reload()
+end
+
+function TeamScreen.onClose(state)
+	state.visible = false
 end
 
 return TeamScreen

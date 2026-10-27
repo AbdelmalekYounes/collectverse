@@ -8,9 +8,52 @@ Parcours cible : **Lancement → Hub → Collection → Équipe → Combat → V
 | 2 | Team Builder, moteur de combat, IA | ✅ Tests Studio et Lune OK |
 | 3 | Invocations carte → personnage 3D, interface de combat | ✅ Tests Studio OK, rendu validé sur captures |
 | 4 | Boosters, collection, sauvegarde, récompenses | ✅ Logique testée (Lune), sauvegarde DataStore vérifiée sur 2 sessions Studio |
-| 5 | Tests, corrections, performances, documentation | À faire |
+| 5 | Tests, corrections, performances, documentation | ✅ Parcours complet vérifié dans Studio, Lune 87/87, Studio 94/94 |
 
-Parcours jouable après le jalon 4 : **Lancement → Hub → Collection → Équipe → Combat → Victoire → Booster → Ouverture → Mise à jour de collection**, avec sauvegarde.
+Le récapitulatif final des livrables est dans [LIVRABLES.md](LIVRABLES.md).
+
+## Jalon 5
+
+### Implémenté
+
+- **Test du parcours** : `ProgressionSpec` rejoue côté logique serveur le parcours de la spécification. Profil neuf → équipe valide → booster de démonstration → combat gagné → booster crédité → ouverture → collection à jour. Il vérifie aussi qu'une défaite ou une égalité ne rapportent que des statistiques.
+- **Correction (testabilité)** : l'attribution des récompenses de combat sort de `BattleService` vers `server/Logic/BattleRewards` (logique pure, testée avec Lune). `BattleService` garde la garantie d'une seule attribution par combat.
+- **Correction (mobile)** : sur téléphone, les plaques des combattants se chevauchaient et masquaient les personnages. Leur marge en pixels (36 × 10 px) ne rétrécissait pas avec la scène 3D. Elle est désormais proportionnelle à la hauteur du viewport (référence 800 px, facteur minimal 0,35). Le facteur est calculé à la création des plaques, au début du combat.
+- **Performances** :
+  - `HubAmbience` déplace les décors animés en un seul appel `Workspace:BulkMoveTo` par image, avec des tampons réutilisés. Les animations sont suspendues pendant les combats, quand le Hub n'est plus à l'écran ;
+  - `CollectionScreen` et `TeamScreen` ne reconstruisent plus leurs vignettes à chaque mise à jour du profil quand ils sont fermés (combat, ouverture de booster). La Collection note qu'elle est périmée et se reconstruit à la prochaine ouverture ; l'Équipe se recharge déjà à l'ouverture. Avec des centaines de cartes, c'était le principal coût évitable côté client.
+- **Dépôt** : `.gitattributes` (LF partout), ce qui supprime les avertissements CRLF de Git sous Windows. Aucun contenu du dépôt n'a changé : l'index était déjà en LF.
+- **Version** : `0.5.0-jalon5`.
+
+### Réellement testé
+
+- **Lune** (`lune run tools/lune/run-tests`) : **87 réussis, 0 échec** (85 + 2 de `ProgressionSpec`).
+- **Contrôle du nouveau test** : en désactivant l'ajout du booster dans `BattleRewards`, `ProgressionSpec` échoue (« booster crédité : attendu 1, obtenu 0 »). Le code a ensuite été restauré.
+- **selene** : 0 erreur, 0 avertissement. **Vérification statique** : 88 fichiers, 276 `require` résolus. **`rojo build`** : OK.
+- **Studio**, sur la place privée « Collectverse Test », code synchronisé par le plugin Rojo, test mené par Claude :
+  - sortie : « Sauvegarde DataStore active », « Serveur prêt (version 0.5.0-jalon5) », `[Tests] 94 réussi(s), 0 échec(s)` ;
+  - **parcours complet** :
+    - Hub → Collection (« Possédées 6 / 10 ») → Équipe → Combat PvE ;
+    - combat joué à la main (actions automatiques et ultimes de Terra, Nox, Kael et Lyra) : **Victoire au tour 23**, « +1 booster First Rift », HUD « Boosters : 1 » ;
+    - ouverture : Lyra, Cristal fracturé (nouveau) ×3, Astra ;
+    - Collection : **« Possédées 7 / 10 »**, Lyra ×3, Astra ×2, Cristal fracturé ×3 en couleur. Cela vérifie aussi la reconstruction différée de la Collection, fermée pendant la mise à jour ;
+    - aucune erreur ni sauvegarde échouée dans la sortie ;
+  - **émulateur mobile** (Device Simulator, iPhone XR paysage, viewport 801 × 413) : Hub, Collection, Équipe et lobby de combat tiennent dans l'écran, sans débordement. En combat, plaques avant correction : chevauchements importants ; après correction : plaques compactes, personnages visibles ;
+  - **PC après correction** (viewport 1471 × 615, facteur 0,77) : plaques lisibles, rendu proche des captures du jalon 3.
+
+### À vérifier dans Studio
+
+1. Sur un vrai téléphone (le Device Simulator ne reproduit ni la densité de pixels ni le toucher réel) :
+   - lisibilité des plaques réduites ;
+   - joystick et bouton de saut : ils ne sont pas apparus dans le simulateur, sans contact tactile réel ;
+   - chevauchement éventuel entre la barre de navigation et le bouton de saut.
+2. Les animations du Hub reprennent bien après un combat (suspendues pendant le combat).
+3. Rotation de l'appareil pendant un combat : la taille des plaques est calculée au début du combat et ne suit pas un changement d'orientation.
+
+### Limitations connues
+
+- Le facteur des plaques n'est pas recalculé si la fenêtre change de taille en plein combat.
+- Pas de mesure de performance chiffrée (MicroProfiler) : les optimisations retirent des coûts identifiés dans le code, sans mesure avant/après.
 
 ## Jalon 4
 

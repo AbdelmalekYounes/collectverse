@@ -17,6 +17,7 @@ local TeamRules = require(Shared.Battle.TeamRules)
 
 local Server = script.Parent.Parent
 local RemoteGuard = require(Server.Net.RemoteGuard)
+local BattleRewards = require(Server.Logic.BattleRewards)
 local PlayerDataService = require(script.Parent.PlayerDataService)
 
 local BattleService = {}
@@ -37,20 +38,9 @@ local function settle(player: Player, session: Session)
 	end
 	session.rewarded = true
 
-	local winner = session.battle.winner
 	local rewards = { boosters = {} }
 	PlayerDataService.update(player, function(profile)
-		if winner == "Ally" then
-			profile.stats.battlesWon += 1
-			for boosterId, quantity in GameConfig.Progression.VictoryBoosters do
-				profile.boosters[boosterId] = (profile.boosters[boosterId] or 0) + quantity
-				rewards.boosters[boosterId] = quantity
-			end
-		elseif winner == "Enemy" then
-			profile.stats.battlesLost += 1
-		else
-			profile.stats.battlesDrawn += 1
-		end
+		rewards = BattleRewards.apply(profile, session.battle.winner, GameConfig.Progression.VictoryBoosters)
 	end)
 	return rewards
 end

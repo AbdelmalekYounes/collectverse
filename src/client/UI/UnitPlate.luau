@@ -5,12 +5,24 @@
 -- d'un emplacement à l'autre.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage.Shared
 local Theme = require(Shared.Config.Theme)
 local Statuses = require(Shared.Catalog.Statuses)
 
 local UnitPlate = {}
+
+-- Marge en pixels ajoutée à la taille en studs, pour un écran d'au moins
+-- MARGIN_REFERENCE_HEIGHT pixels de haut. Sur un écran plus petit (téléphone),
+-- la scène 3D rétrécit mais pas les pixels : la marge est réduite d'autant,
+-- sinon les plaques se chevauchent et masquent les personnages.
+local MARGIN_REFERENCE_HEIGHT = 800
+local MARGIN_MIN_FACTOR = 0.35
+
+function UnitPlate.marginFactor(viewportHeight: number): number
+	return math.clamp(viewportHeight / MARGIN_REFERENCE_HEIGHT, MARGIN_MIN_FACTOR, 1)
+end
 
 export type Info = {
 	selected: boolean,
@@ -80,7 +92,9 @@ function UnitPlate.create(model: Model, unit, parent: Instance, onClick: (uid: s
 	billboard.Name = unit.uid .. "Plate"
 	billboard.Adornee = model.PrimaryPart
 	-- Taille en studs (suit la perspective) + marge en pixels pour rester lisible de loin.
-	billboard.Size = UDim2.new(4.4, 36, 2, 10)
+	local camera = Workspace.CurrentCamera
+	local factor = UnitPlate.marginFactor(if camera then camera.ViewportSize.Y else MARGIN_REFERENCE_HEIGHT)
+	billboard.Size = UDim2.new(4.4, math.round(36 * factor), 2, math.round(10 * factor))
 	-- Bas de la plaque environ 1,4 stud au-dessus de la tête. Décalage en espace monde :
 	-- StudsOffset suivrait l'inclinaison de la caméra et placerait la plaque ~1,4× trop haut.
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, model:GetExtentsSize().Y + 2.4, 0)

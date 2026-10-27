@@ -2,8 +2,10 @@
 
 Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats stratégiques au tour par tour.
 
-> **État : jalon 4 sur 5.** Le parcours complet est jouable : Hub → Collection → Équipe → Combat 3D → Victoire → Booster → Ouverture → Collection mise à jour, avec sauvegarde DataStore.
-> Le jalon 5 (finitions, performances) reste à faire. Voir [docs/JALONS.md](docs/JALONS.md).
+> **État : prototype V0.1 terminé (jalon 5 sur 5).** Le parcours complet a été joué dans Studio, avec la sauvegarde DataStore réelle : Hub → Collection → Équipe → Combat 3D → Victoire → Booster → Ouverture → Collection mise à jour.
+>
+> - Récapitulatif des livrables (modules, tests et résultats, vérifications manuelles, limitations) : [docs/LIVRABLES.md](docs/LIVRABLES.md).
+> - Détail jalon par jalon : [docs/JALONS.md](docs/JALONS.md). Catalogue : [docs/CATALOGUE.md](docs/CATALOGUE.md).
 
 ## Installation
 
@@ -44,7 +46,8 @@ rojo build -o Collectverse.rbxlx
 ### Réglages Studio recommandés
 
 - **Lighting → Technology : Future** (non modifiable par script).
-- **Sauvegarde réelle** : la place doit être publiée sur Roblox (**Fichier → Publier**), avec **Game Settings → Security → Enable Studio Access to API Services**.
+- **Sauvegarde réelle** : la place doit être publiée sur Roblox (**Fichier → Publier**), avec l'accès API activé : **Fichier → Paramètres d'expérience → Sécurité → Permettre à Studio d'accéder aux services API**, puis **Enregistrer**.
+  - Si les interrupteurs de l'onglet Sécurité ne s'affichent pas (sortie : « Failed to parse secrets: Can't parse JSON »), le réglage n'est pas enregistré : fermez toutes les fenêtres Studio, relancez, rouvrez uniquement la place, puis recommencez.
   - Sinon, le serveur passe automatiquement en **mode test local** : la sortie l'indique, le HUD affiche « Mode test : sauvegarde inactive », et rien n'est persisté.
   - Les données d'un test Studio avec accès API sont de vraies données DataStore : utilisez une place de test, pas la place publique.
 
@@ -80,7 +83,7 @@ Pour ne lancer que certaines specs :
 lune run tools/lune/run-tests -- BattleEngineSpec CombatAISpec
 ```
 
-Le script charge les modules tels quels, dans une imitation minimale de l'arbre Rojo. `ModelFactorySpec`, qui crée des Instances Roblox, reste réservée à Studio. Le code de sortie vaut 1 en cas d'échec.
+Le script charge les modules tels quels, dans une imitation minimale de l'arbre Rojo. `ModelFactorySpec` et `SummonSpec`, qui créent des Instances Roblox, restent réservées à Studio. Le code de sortie vaut 1 en cas d'échec.
 
 ```bash
 python tools/static_check.py
@@ -101,14 +104,15 @@ src/shared   → ReplicatedStorage.Shared          (client + serveur)
   Battle/      règles d'équipe, ciblage, effets, moteur, IA (logique pure)
   Net/         liste des remotes
   Visuals/     apparences des combattants, séparées du gameplay
-  Util/        Freeze (gel des données)
+  Util/        Freeze (gel des données), Signal (événements purs), Text (majuscules accentuées)
 src/server   → ServerScriptService.Server
   World/       HubBuilder (scène), LightingSetup
   Services/    PlayerDataService, TeamService, BattleService, BoosterService
   Net/         RemoteGuard, RateLimiter
   Data/        ProfileTemplate, ProfileSchema (versions, réparation), ProfileStore
                (chargement/sauvegarde), DataStoreAdapter, MemoryAdapter
-  Logic/       BoosterLogic (tirage), Inventory (cartes, doublons, déblocages)
+  Logic/       BoosterLogic (tirage), Inventory (cartes, doublons, déblocages),
+               BattleRewards (issue d'un combat) — logique pure, testée avec Lune
 src/client   → StarterPlayerScripts.Client
   Controllers/ UIController (navigation), ZoneController, HubAmbience,
                DataController, BattleController, BattleDirector (mise en scène),
@@ -132,6 +136,7 @@ Correspondance avec l'architecture cible :
 | SummonController | `client/Battle/SummonController` + `shared/Visuals/ModelFactory` | 3 ✅ |
 | Interface de combat | `client/Controllers/BattleDirector`, `BattlePlanner`, `BattleReplay` + `client/UI/BattleHud`, `UnitPlate` | 3 ✅ |
 | CollectionService → `Inventory` (nom du service Roblox évité), BoosterService | `server/Logic`, `server/Services/BoosterService` | 4 ✅ |
+| Récompenses de combat | `server/Logic/BattleRewards`, appelé par `BattleService` | 5 ✅ |
 
 Principes :
 
@@ -139,4 +144,4 @@ Principes :
 - **Validation au démarrage.** Le serveur refuse de démarrer si `CatalogValidator` trouve une incohérence.
 - **Textes générés.** Les descriptions des actions viennent des effets réels (`AbilityText`) : elles ne peuvent pas diverger du combat.
 - **Assets remplaçables.** Placez un `Model` nommé d'après l'id (ex. `F001`) dans `ReplicatedStorage.Assets.Fighters`, avec une `PrimaryPart` aux pieds et l'avant tourné vers −Z. Il remplacera automatiquement le modèle provisoire.
-- **Serveur autoritaire** (jalons 2 et 4) : le client n'envoie que des intentions, validées côté serveur (types, valeurs, fréquence, état).
+- **Serveur autoritaire** : le client n'envoie que des intentions, validées côté serveur (types, valeurs, fréquence, état).

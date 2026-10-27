@@ -241,6 +241,8 @@ function CollectionScreen.build(container: Frame, _controller)
 		selectedId = nil :: string?,
 		tiles = {} :: { [string]: TextButton },
 		filterButtons = {} :: { [string]: TextButton },
+		visible = false,
+		stale = false,
 	}
 	local maxima = computeStatMaxima()
 
@@ -405,9 +407,30 @@ function CollectionScreen.build(container: Frame, _controller)
 		end
 	end
 
-	DataController.Changed:Connect(renderTiles)
+	-- Écran fermé (combat, booster…) : on note seulement que les vignettes sont
+	-- périmées et on les reconstruit à la prochaine ouverture.
+	DataController.Changed:Connect(function()
+		if state.visible then
+			renderTiles()
+		else
+			state.stale = true
+		end
+	end)
+	state.renderTiles = renderTiles
 	renderTiles()
 	return state
+end
+
+function CollectionScreen.onOpen(state)
+	state.visible = true
+	if state.stale then
+		state.stale = false
+		state.renderTiles()
+	end
+end
+
+function CollectionScreen.onClose(state)
+	state.visible = false
 end
 
 return CollectionScreen
