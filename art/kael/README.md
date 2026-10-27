@@ -7,6 +7,7 @@ Dossier de travail distinct du code du jeu (`src/`). Rien ici n'est chargé par 
 | `KAEL_SPEC.md` | Spécifications artistiques et techniques (proportions, palette, équipement, budget, rig, animations). |
 | `kael_build.py` | Script Blender reproductible : maillage, texture, armature, poids, animations, exports, rendus, rapport. |
 | `contact_sheet.py` | Planche de contrôle (vues et poses) à partir des rendus. |
+| `kael_anim_export.py` | Export des animations en images-clés pour Roblox (V0.2.3), à partir du `.blend`, sans le modifier. Voir `docs/V023_ANIMATION_PIPELINE.md`. |
 | `build/` | Résultats de la dernière production, versionnés pour pouvoir être relus sans Blender. |
 
 ## Produire
@@ -29,6 +30,16 @@ La commande s'exécute sans interface, en environ 30 s, et produit :
 - `build/kael_report.json` : rapport de validation (budget, os, influences, sommets sans poids, pieds au sol, hauteur).
 
 La production s'arrête en signalant `valide = False` si un critère du budget n'est pas respecté.
+
+## Animations pour Roblox
+
+Les FBX d'animation ne sont pas importés dans Roblox : l'éditeur d'animation n'y associait aucune piste. Les animations sont exportées en données, puis converties en `KeyframeSequence` dans Studio :
+
+```bash
+blender -b art/kael/build/F001_Kael.blend --python art/kael/kael_anim_export.py -- --out src/server/Dev/AnimationData/F001_Kael --step 2
+```
+
+La suite (vérification, construction, publication) est décrite dans `docs/V023_ANIMATION_PIPELINE.md`.
 
 ## Importer dans Roblox
 

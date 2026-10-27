@@ -86,4 +86,13 @@ function FighterAnimator.startIdle(model: Model)
 	end
 end
 
+-- Arrête la boucle d'attente (défaite : le combattant ne doit pas se relever).
+function FighterAnimator.stopIdle(model: Model)
+	local byKind = tracks[model]
+	local track = byKind and byKind.Idle
+	if track then
+		track:Stop(0.1)
+	end
+end
+
 return FighterAnimator

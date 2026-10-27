@@ -90,7 +90,9 @@ Root (aux pieds)
 | Hit | 14 images | non | recul du buste et de la tête, bras écartés |
 | Defeat | 40 images | non | chute à genoux puis buste effondré |
 
-État réel, au moment de la V0.2.2 :
+État réel en V0.2.3 : les 7 animations sont converties en KeyframeSequence, validées, publiées et jouées en combat (voir `docs/V023_ANIMATION_PIPELINE.md`).
+
+État au moment de la V0.2.2 :
 - créées dans Blender (images-clés) ;
 - vérifiées sur les rendus de poses ;
 - exportées en FBX ;

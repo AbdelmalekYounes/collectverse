@@ -19,7 +19,8 @@ local process = require("@lune/process")
 local serde = require("@lune/serde")
 
 -- Specs exigeant le moteur Roblox (Instance.new, workspace…)
-local STUDIO_ONLY = { ModelFactorySpec = true, SummonSpec = true, FighterAssetPrepSpec = true }
+local STUDIO_ONLY =
+	{ ModelFactorySpec = true, SummonSpec = true, FighterAssetPrepSpec = true, KeyframeBuilderSpec = true }
 
 local CLASS_BY_SUFFIX = {
 	{ suffix = ".server.luau", class = "Script" },

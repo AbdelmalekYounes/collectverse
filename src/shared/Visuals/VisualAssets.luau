@@ -50,10 +50,24 @@ local Cards: { [string]: any } = {
 	-- (art/kael, importé puis mis au contrat par Dev/FighterAssetPrep). Le modèle
 	-- vit dans ReplicatedStorage.Assets.Fighters (assets/Fighters/F001_Kael.rbxm) ;
 	-- absent ou non conforme, le modèle provisoire est utilisé.
-	-- À ajouter quand ils existeront (identifiants réels uniquement) :
-	--   art = "rbxassetid://…" (illustration officielle),
-	--   animations = { Idle = "rbxassetid://…", … } (animations publiées).
-	F001 = { variant = "Holo", model = "F001_Kael" },
+	-- Animations (V0.2.3) : converties depuis Blender (art/kael/kael_anim_export.py
+	-- → Dev/KeyframeBuilder), validées dans Studio, publiées sur le compte du
+	-- créateur ; identifiants vérifiés en rechargeant chaque animation.
+	-- À ajouter quand elle existera (identifiant réel uniquement) :
+	--   art = "rbxassetid://…" (illustration officielle).
+	F001 = {
+		variant = "Holo",
+		model = "F001_Kael",
+		animations = {
+			Idle = "rbxassetid://139388493488767",
+			Attack = "rbxassetid://85859268098888",
+			Skill = "rbxassetid://138516128631569",
+			Ultimate = "rbxassetid://128975789100207",
+			Defend = "rbxassetid://108376040520289",
+			Hit = "rbxassetid://90520511069344",
+			Defeat = "rbxassetid://115751158976399",
+		},
+	},
 }
 
 VisualAssets.Cards = Freeze.deep(Cards)

@@ -45,6 +45,8 @@ local BEAT_SECONDS = {
 	BattleEnd = 0.3,
 }
 local REDUCED_SPEED = 2.5
+-- Délai avant le fondu d'un combattant vaincu qui joue une animation de chute.
+local DEFEAT_FADE_DELAY = 0.9
 
 local hud
 local planner
@@ -126,8 +128,13 @@ local function playEventFx(event, rate: number)
 		local color = if info and info.kind == "Debuff" then Theme.Colors.Violet else Theme.Colors.Gold
 		BattleFx.floatText(model, if info then info.name else event.status, color, rate)
 	elseif event.type == "Defeated" and model then
-		FighterAnimator.play(model, "Defeat", rate)
-		BattleFx.defeat(model, rate) -- le fondu s'applique dans tous les cas
+		if FighterAnimator.play(model, "Defeat", rate) then
+			-- Animation de chute : l'attente s'arrête, le fondu suit la chute.
+			FighterAnimator.stopIdle(model)
+			task.delay(DEFEAT_FADE_DELAY / rate, BattleFx.defeat, model, rate)
+		else
+			BattleFx.defeat(model, rate)
+		end
 	elseif event.type == "Skip" and models[event.actor] then
 		BattleFx.floatText(models[event.actor], "Étourdi", Theme.Colors.Violet, rate)
 	end

@@ -112,16 +112,18 @@ return function(test, expect)
 
 	test("un asset final conforme remplace le modèle provisoire", function()
 		local asset = Instance.new("Model")
-		asset.Name = VisualAssets.modelName("F001")
+		-- Terra (F002) : aucune animation déclarée, donc pas d'avertissement de rig
+		-- pour ce modèle minimal (une pièce, sans Animator).
+		asset.Name = VisualAssets.modelName("F002")
 		local root = Instance.new("Part")
 		root.Name = "AssetRoot"
 		root.Anchored = true
 		root.Parent = asset
 		asset.PrimaryPart = root
 		withAsset(asset, function(fighters)
-			local built = ModelFactory.build("F001", { assetsFolder = fighters })
+			local built = ModelFactory.build("F002", { assetsFolder = fighters })
 			expect.truthy(built:FindFirstChild("AssetRoot"), "asset cloné")
-			expect.equal(built:GetAttribute("FighterId"), "F001")
+			expect.equal(built:GetAttribute("FighterId"), "F002")
 			built:Destroy()
 		end)
 	end)
@@ -169,8 +171,6 @@ return function(test, expect)
 					expect.equal(model:GetAttribute("FighterId"), "F001")
 					expect.near((model:GetPivot().Position - target.Position).Magnitude, 0, 1e-2, mode .. " : position")
 					expect.equal(model.UpperTorso.Transparency, 0, mode .. " : membre visible après l'invocation")
-					-- Aucune animation déclarée pour Kael : repli sur les mouvements génériques.
-					expect.falsy(FighterAnimator.play(model, "Attack", 1), mode .. " : mouvement générique")
 				end
 			end)
 			folder:Destroy()
@@ -178,6 +178,14 @@ return function(test, expect)
 				error(err, 0)
 			end
 		end)
+	end)
+
+	test("combattant sans animation déclarée : mouvements génériques (fallback)", function()
+		-- Terra (F002) n'a aucune animation dans VisualAssets, même avec un rig animable.
+		local rig = motorRig("F002")
+		rig:SetAttribute("FighterId", "F002")
+		expect.falsy(FighterAnimator.play(rig, "Attack", 1), "aucune animation spécifique")
+		rig:Destroy()
 	end)
 
 	test("un asset non conforme est ignoré : modèle provisoire (fallback)", function()

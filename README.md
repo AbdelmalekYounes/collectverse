@@ -6,6 +6,7 @@ Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats str
 >
 > - Récapitulatif des livrables (modules, tests et résultats, vérifications manuelles, limitations) : [docs/LIVRABLES.md](docs/LIVRABLES.md).
 > - **Audit et stabilisation (version 0.5.1-audit)** : verrou de session des sauvegardes, combats adaptés à l'écran, architecture visuelle V0.2. Voir [docs/AUDIT_V01.md](docs/AUDIT_V01.md).
+> - **V0.2.3 — animations 3D (version 0.6.2-anim)** : les 7 animations de Kael converties de Blender en KeyframeSequence, validées, publiées et jouées en combat. Voir [docs/V023_ANIMATION_PIPELINE.md](docs/V023_ANIMATION_PIPELINE.md).
 > - **V0.2.2 — premier personnage 3D (version 0.6.1-kael)** : pipeline Blender → Roblox de Kael (modèle riggé, rendus, import, contrat, versionnement). Voir [docs/V022_KAEL_PIPELINE.md](docs/V022_KAEL_PIPELINE.md).
 > - **V0.2.1 — fondations visuelles (version 0.6.0-visual)** : cartes premium (cadres par rareté, variantes, holo), ouverture de booster retravaillée, personnage pilote Kael et pipeline Blender → Roblox. Voir [docs/V02_VISUAL_PIPELINE.md](docs/V02_VISUAL_PIPELINE.md).
 > - Détail jalon par jalon : [docs/JALONS.md](docs/JALONS.md). Catalogue : [docs/CATALOGUE.md](docs/CATALOGUE.md).
@@ -141,7 +142,8 @@ src/server   → ServerScriptService.Server
                BattleRewards (issue d'un combat), BattleSessions (combats en cours)
                — logique pure, testée avec Lune
   Dev/         StudioDebug (outils de test, Studio uniquement),
-               FighterAssetPrep (mise au contrat d'un combattant importé)
+               FighterAssetPrep (mise au contrat d'un combattant importé),
+               KeyframeBuilder (animations Blender → KeyframeSequence), AnimationData
 src/client   → StarterPlayerScripts.Client
   Controllers/ UIController (navigation), ZoneController, HubAmbience,
                DataController, BattleController, BattleDirector (mise en scène),

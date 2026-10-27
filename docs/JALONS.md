@@ -11,7 +11,8 @@ Parcours cible : **Lancement → Hub → Collection → Équipe → Combat → V
 | 5 | Tests, corrections, performances, documentation | ✅ Parcours complet vérifié dans Studio, Lune 87/87, Studio 94/94 |
 | Audit | Stabilisation V0.1 (0.5.1) : sauvegardes, gameplay, mobile, visuels V0.2 | ✅ Lune 115/115, Studio 125/125 — voir [AUDIT_V01.md](AUDIT_V01.md) |
 | V0.2.1 | Fondations visuelles (0.6.0) : cartes premium, ouverture des boosters, pilote Kael | ✅ Lune 124/124, Studio 137/137 — voir [V02_VISUAL_PIPELINE.md](V02_VISUAL_PIPELINE.md) |
-| V0.2.2 | Premier personnage 3D (0.6.1) : Kael riggé, pipeline Blender → Roblox | ✅ modèle intégré, Studio 141/141 ; ⚠️ import des animations à résoudre — voir [V022_KAEL_PIPELINE.md](V022_KAEL_PIPELINE.md) |
+| V0.2.2 | Premier personnage 3D (0.6.1) : Kael riggé, pipeline Blender → Roblox | ✅ modèle intégré, Studio 141/141 ; animations résolues en V0.2.3 — voir [V022_KAEL_PIPELINE.md](V022_KAEL_PIPELINE.md) |
+| V0.2.3 | Pipeline d'animation (0.6.2) : Blender → KeyframeSequence, 7 animations de Kael | ✅ validées, publiées, jouées en combat ; Studio 146/146 — voir [V023_ANIMATION_PIPELINE.md](V023_ANIMATION_PIPELINE.md) |
 
 Le récapitulatif final des livrables est dans [LIVRABLES.md](LIVRABLES.md).
 

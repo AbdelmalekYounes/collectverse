@@ -113,6 +113,8 @@ Place de test privée « Collectverse Test », avec votre accord explicite pour 
 
 ## 5. Animations : état précis
 
+> **Résolu en V0.2.3** ([V023_ANIMATION_PIPELINE.md](V023_ANIMATION_PIPELINE.md)). Le rig était animable : l'Animator associe les poses aux os par leur nom, et l'échec venait de l'import FBX de l'éditeur d'animation. Les 7 animations sont désormais converties en KeyframeSequence, validées, publiées et jouées en combat. Le tableau ci-dessous décrit l'état à la fin de la V0.2.2.
+
 | Animation | Créée (Blender) | Pose vérifiée (rendu) | Exportée (FBX) | Importée dans Roblox | Publiée (AnimationId) |
 |---|---|---|---|---|---|
 | Idle | ✅ | ✅ | ✅ | ❌ | ❌ |

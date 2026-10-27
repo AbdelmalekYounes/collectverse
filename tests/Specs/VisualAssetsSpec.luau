@@ -17,16 +17,32 @@ return function(test, expect)
 		expect.equal(#errors, 0, table.concat(errors, " ; "))
 	end)
 
-	test("sans asset déclaré : fallback partout", function()
+	test("sans asset déclaré : fallback partout (hors Kael, pilote)", function()
 		for _, card in CardCatalog.getAll() do
 			expect.equal(VisualAssets.cardArt(card.id), nil, card.id .. " : illustration provisoire")
 		end
 		for _, fighter in CardCatalog.getFighters() do
 			local expected = if fighter.id == "F001" then "F001_Kael" else fighter.id
 			expect.equal(VisualAssets.modelName(fighter.id), expected, "nom du modèle cherché")
-			for _, kind in VisualAssets.AnimationKinds do
-				expect.equal(VisualAssets.animation(fighter.id, kind), nil, "mouvement générique")
+			if fighter.id ~= "F001" then
+				for _, kind in VisualAssets.AnimationKinds do
+					expect.equal(
+						VisualAssets.animation(fighter.id, kind),
+						nil,
+						fighter.id .. " : mouvement générique"
+					)
+				end
 			end
+		end
+	end)
+
+	test("Kael : les 7 animations sont déclarées, chacune avec un identifiant distinct", function()
+		local seen = {}
+		for _, kind in VisualAssets.AnimationKinds do
+			local id = VisualAssets.animation("F001", kind)
+			expect.truthy(id and string.match(id, "^rbxassetid://%d+$"), kind .. " : identifiant Roblox")
+			expect.falsy(seen[id], kind .. " : identifiant non réutilisé")
+			seen[id] = true
 		end
 	end)
 
