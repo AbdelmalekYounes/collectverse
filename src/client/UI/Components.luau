@@ -91,6 +91,8 @@ function Components.label(props: { [string]: any }?): TextLabel
 	return new(
 		"TextLabel",
 		merge({
+			-- Sans cela, un libellé jamais rempli affiche le texte par défaut de Roblox (« Label »).
+			Text = "",
 			BackgroundTransparency = 1,
 			FontFace = Theme.Fonts.Body,
 			TextColor3 = Theme.Colors.Text,

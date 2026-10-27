@@ -1,6 +1,7 @@
 -- Écran Collection : grille de cartes filtrable + fiche détaillée.
--- Jalon 1 : affiche le catalogue complet. Au jalon 4, les quantités possédées
--- viendront du profil serveur (CollectionService).
+-- Tout le catalogue est affiché : les cartes possédées avec leur nombre
+-- d'exemplaires (doublons compris), les autres grisées. Les quantités viennent
+-- du profil serveur et se mettent à jour à chaque changement (ex. booster ouvert).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -13,6 +14,8 @@ local Rarities = require(Shared.Catalog.Rarities)
 local Roles = require(Shared.Catalog.Roles)
 local Text = require(Shared.Util.Text)
 
+local Client = script.Parent.Parent.Parent
+local DataController = require(Client.Controllers.DataController)
 local UI = script.Parent.Parent
 local Components = require(UI.Components)
 local CardTile = require(UI.CardTile)
@@ -165,7 +168,7 @@ local function actionCard(parent: Instance, layoutOrder: number, action)
 	})
 end
 
-local function renderDetail(content: Frame, card, maxima)
+local function renderDetail(content: Frame, card, maxima, owned: number)
 	for _, child in content:GetChildren() do
 		if not child:IsA("UIListLayout") then
 			child:Destroy()
@@ -220,10 +223,14 @@ local function renderDetail(content: Frame, card, maxima)
 		Components.paragraph(card.plannedUse or "—", { LayoutOrder = nextOrder(), Parent = content })
 	end
 
-	Components.paragraph("Exemplaires possédés : synchronisés avec votre profil au jalon 4.", {
+	Components.label({
+		Text = if owned > 0
+			then string.format("Exemplaires possédés : %d", owned)
+			else "Pas encore obtenue : disponible dans les boosters First Rift.",
+		FontFace = Theme.Fonts.Bold,
 		TextSize = Theme.TextSize.Caption,
-		TextColor3 = Theme.Colors.TextDim,
-		LayoutOrder = nextOrder(),
+		TextColor3 = if owned > 0 then Theme.Colors.Success else Theme.Colors.TextDim,
+		LayoutOrder = 0,
 		Parent = content,
 	})
 end
@@ -296,6 +303,11 @@ function CollectionScreen.build(container: Frame, _controller)
 		Parent = detail,
 	}, { Components.list(Enum.FillDirection.Vertical, 8) })
 
+	local function ownedCount(cardId: string): number
+		local profile = DataController.getProfile()
+		return if profile then profile.cards[cardId] or 0 else 0
+	end
+
 	local function selectCard(cardId: string)
 		local card = CardCatalog.get(cardId)
 		if not card then
@@ -310,7 +322,7 @@ function CollectionScreen.build(container: Frame, _controller)
 		end
 		state.selectedId = cardId
 		CardTile.setSelected(state.tiles[cardId], card, true)
-		renderDetail(detailContent, card, maxima)
+		renderDetail(detailContent, card, maxima, ownedCount(cardId))
 		detail.CanvasPosition = Vector2.zero
 	end
 
@@ -349,18 +361,52 @@ function CollectionScreen.build(container: Frame, _controller)
 		state.filterButtons[filter.id].Parent = filterBar
 	end
 
-	for index, card in CardCatalog.getAll() do
-		local tile = CardTile.create(card, {
-			layoutOrder = index,
-			onClick = function()
-				selectCard(card.id)
-			end,
-		})
-		tile.Parent = grid
-		state.tiles[card.id] = tile
+	local progressLabel = Components.label({
+		TextSize = Theme.TextSize.Caption,
+		TextColor3 = Theme.Colors.Cyan,
+		FontFace = Theme.Fonts.Bold,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		Size = UDim2.new(0, 110, 1, 0),
+		LayoutOrder = 10,
+		Parent = filterBar,
+	})
+
+	-- Reconstruit les vignettes à partir du profil (quantités, cartes grisées).
+	local function renderTiles()
+		for _, tile in state.tiles do
+			tile:Destroy()
+		end
+		state.tiles = {}
+		local unique, total = 0, 0
+		for index, card in CardCatalog.getAll() do
+			local owned = ownedCount(card.id)
+			total += 1
+			if owned > 0 then
+				unique += 1
+			end
+			local tile = CardTile.create(card, {
+				layoutOrder = index,
+				quantity = owned,
+				owned = owned > 0,
+				onClick = function()
+					selectCard(card.id)
+				end,
+			})
+			tile.Parent = grid
+			state.tiles[card.id] = tile
+		end
+		progressLabel.Text = string.format("Possédées %d / %d", unique, total)
+
+		local previous = state.selectedId
+		state.selectedId = nil
+		applyFilter(state.filter)
+		if previous and state.tiles[previous] and state.tiles[previous].Visible then
+			selectCard(previous)
+		end
 	end
 
-	applyFilter("All")
+	DataController.Changed:Connect(renderTiles)
+	renderTiles()
 	return state
 end
 

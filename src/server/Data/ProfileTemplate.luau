@@ -38,7 +38,12 @@ function ProfileTemplate.create()
 			battlesDrawn = 0,
 			boostersOpened = 0,
 		},
+		-- Préférences de présentation ; seules les clés choisies par le joueur sont présentes.
+		settings = {},
 	}
 end
+
+-- Préférences acceptées (toutes booléennes).
+ProfileTemplate.SettingKeys = { reducedMotion = true, skipSummons = true }
 
 return ProfileTemplate

@@ -13,6 +13,8 @@ local Remotes = {
 		StartBattle = "StartBattle",
 		SubmitTurn = "SubmitTurn",
 		ForfeitBattle = "ForfeitBattle",
+		OpenBooster = "OpenBooster",
+		SetSettings = "SetSettings",
 	},
 	Events = {
 		ProfileUpdated = "ProfileUpdated",

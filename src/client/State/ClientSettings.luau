@@ -1,5 +1,5 @@
 -- Préférences locales du joueur (présentation uniquement, jamais de gameplay).
--- Non persistées au jalon 1 : elles seront rattachées au profil au jalon 4.
+-- Enregistrées dans le profil du joueur par SettingsSync (jalon 4).
 
 local GuiService = game:GetService("GuiService")
 

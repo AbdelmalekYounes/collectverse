@@ -4,7 +4,7 @@
 local Freeze = require(script.Parent.Parent.Util.Freeze)
 
 local GameConfig = {
-	Version = "0.3.0-jalon3",
+	Version = "0.4.0-jalon4",
 
 	Team = {
 		Size = 5,

@@ -67,7 +67,7 @@ function SettingsScreen.build(container: Frame, _controller)
 
 	Components.paragraph(
 		string.format(
-			"Version %s. Ces préférences sont locales à cette session ; elles seront enregistrées dans votre profil au jalon 4.",
+			"Version %s. Ces préférences sont enregistrées dans votre profil (si la sauvegarde est active).",
 			GameConfig.Version
 		),
 		{ TextColor3 = Theme.Colors.TextDim, TextSize = Theme.TextSize.Caption, LayoutOrder = 10, Parent = column }

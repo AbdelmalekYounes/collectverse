@@ -2,8 +2,8 @@
 
 Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats stratégiques au tour par tour.
 
-> **État : jalon 3 sur 5.** Hub, collection, Team Builder, et combat PvE 5 contre 5 dans une arène 3D, avec invocations carte → personnage.
-> L'ouverture des boosters et la sauvegarde ne sont pas encore disponibles. Voir [docs/JALONS.md](docs/JALONS.md).
+> **État : jalon 4 sur 5.** Le parcours complet est jouable : Hub → Collection → Équipe → Combat 3D → Victoire → Booster → Ouverture → Collection mise à jour, avec sauvegarde DataStore.
+> Le jalon 5 (finitions, performances) reste à faire. Voir [docs/JALONS.md](docs/JALONS.md).
 
 ## Installation
 
@@ -44,7 +44,9 @@ rojo build -o Collectverse.rbxlx
 ### Réglages Studio recommandés
 
 - **Lighting → Technology : Future** (non modifiable par script).
-- **Game Settings → Security → Enable Studio Access to API Services** : requis pour la sauvegarde (jalon 4).
+- **Sauvegarde réelle** : la place doit être publiée sur Roblox (**Fichier → Publier**), avec **Game Settings → Security → Enable Studio Access to API Services**.
+  - Sinon, le serveur passe automatiquement en **mode test local** : la sortie l'indique, le HUD affiche « Mode test : sauvegarde inactive », et rien n'est persisté.
+  - Les données d'un test Studio avec accès API sont de vraies données DataStore : utilisez une place de test, pas la place publique.
 
 Le Hub est construit par script au lancement, dans `Workspace.CollectverseHub`. Les autres `SpawnLocation` de la place sont désactivées pour la session uniquement (rien n'est modifié dans le fichier).
 
@@ -102,9 +104,11 @@ src/shared   → ReplicatedStorage.Shared          (client + serveur)
   Util/        Freeze (gel des données)
 src/server   → ServerScriptService.Server
   World/       HubBuilder (scène), LightingSetup
-  Services/    PlayerDataService, TeamService, BattleService
+  Services/    PlayerDataService, TeamService, BattleService, BoosterService
   Net/         RemoteGuard, RateLimiter
-  Data/        ProfileTemplate (profil versionné)
+  Data/        ProfileTemplate, ProfileSchema (versions, réparation), ProfileStore
+               (chargement/sauvegarde), DataStoreAdapter, MemoryAdapter
+  Logic/       BoosterLogic (tirage), Inventory (cartes, doublons, déblocages)
 src/client   → StarterPlayerScripts.Client
   Controllers/ UIController (navigation), ZoneController, HubAmbience,
                DataController, BattleController, BattleDirector (mise en scène),
@@ -124,10 +128,10 @@ Correspondance avec l'architecture cible :
 | UIController | `client/Controllers/UIController` | 1 ✅ |
 | TeamService | `server/Services/TeamService` + `shared/Battle/TeamRules` | 2 ✅ |
 | BattleEngine, AbilitySystem, CombatAI | `shared/Battle` (logique pure) + `server/Services/BattleService` | 2 ✅ |
-| PlayerDataService | `server/Services/PlayerDataService` (session ; DataStore au jalon 4) | 2 ◐ |
+| PlayerDataService | `server/Services/PlayerDataService` + `server/Data/ProfileStore` | 4 ✅ |
 | SummonController | `client/Battle/SummonController` + `shared/Visuals/ModelFactory` | 3 ✅ |
 | Interface de combat | `client/Controllers/BattleDirector`, `BattlePlanner`, `BattleReplay` + `client/UI/BattleHud`, `UnitPlate` | 3 ✅ |
-| CollectionService, BoosterService | `server/Services` | 4 |
+| CollectionService → `Inventory` (nom du service Roblox évité), BoosterService | `server/Logic`, `server/Services/BoosterService` | 4 ✅ |
 
 Principes :
 

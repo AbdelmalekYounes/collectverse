@@ -35,6 +35,7 @@ local ZONES = {
 		subtitle = "Consulter vos cartes",
 		color = Theme.Colors.Cyan,
 		angle = 160,
+		labelHeight = 11, -- au-dessus des noms des statues
 	},
 	{
 		id = "Booster",
@@ -43,6 +44,7 @@ local ZONES = {
 		subtitle = "Ouvrir des boosters gratuits",
 		color = Theme.Colors.Gold,
 		angle = 90,
+		labelHeight = 10.5, -- au-dessus du paquet flottant
 	},
 	{
 		id = "Battle",
@@ -51,6 +53,7 @@ local ZONES = {
 		subtitle = "Affronter les Échos de la faille",
 		color = Theme.Colors.Coral,
 		angle = 20,
+		labelHeight = 9.5, -- au-dessus de l'arche
 	},
 }
 
@@ -84,13 +87,19 @@ local function disk(
 	return part(parent, name, props)
 end
 
-local function label(parent: BasePart, title: string, subtitle: string, color: Color3, offsetY: number)
+-- Panneau flottant. Dimensions en studs ; le décalage est vertical dans le monde.
+-- StudsOffset serait relatif à la caméra et StudsOffsetWorldSpace est exprimé
+-- dans le repère du support (un cylindre est couché) : on convertit donc.
+local ZONE_LABEL = { width = 14, height = 3.6, maxDistance = 160 }
+local STATUE_LABEL = { width = 4.2, height = 1.5, maxDistance = 60 }
+
+local function label(parent: BasePart, title: string, subtitle: string, color: Color3, offsetY: number, style)
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "Label"
-	billboard.Size = UDim2.fromScale(14, 3.6)
-	billboard.StudsOffset = Vector3.new(0, offsetY, 0)
+	billboard.Size = UDim2.fromScale(style.width, style.height)
+	billboard.StudsOffsetWorldSpace = parent.CFrame:VectorToObjectSpace(Vector3.new(0, offsetY, 0))
 	billboard.LightInfluence = 0
-	billboard.MaxDistance = 160
+	billboard.MaxDistance = style.maxDistance
 	billboard.Parent = parent
 
 	local titleLabel = Instance.new("TextLabel")
@@ -291,7 +300,7 @@ local function buildCollectionZone(folder: Folder, frame: CFrame, _zone)
 		model.Parent = statues
 
 		local elementName = Elements.Info[fighter.element].name
-		label(model.PrimaryPart :: BasePart, fighter.name, elementName, Theme.Element[fighter.element], 8.5)
+		label(model.PrimaryPart :: BasePart, fighter.name, elementName, Theme.Element[fighter.element], 8, STATUE_LABEL)
 	end
 
 	-- Console devant les statues : point d'interaction de la zone
@@ -384,7 +393,7 @@ function HubBuilder.build(): Folder
 		buildPad(folder, frame, zone.color)
 		local anchor = ZONE_BUILDERS[zone.id](folder, frame, zone)
 		prompt(anchor, zone)
-		label(anchor, zone.label, zone.subtitle, zone.color, 7)
+		label(anchor, zone.label, zone.subtitle, zone.color, zone.labelHeight, ZONE_LABEL)
 	end
 
 	buildSpawn(hub)

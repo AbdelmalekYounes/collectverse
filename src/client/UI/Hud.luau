@@ -144,6 +144,13 @@ function Hud.create(canvas: Frame, controller): HudApi
 			count += quantity
 		end
 		boosterLabel.Text = "Boosters : " .. count
+		-- Jamais de fausse impression de sauvegarde : le mode réel est toujours affiché.
+		local saveLabel = saveChip:FindFirstChildOfClass("TextLabel") :: TextLabel
+		if profile.persistence == "Unavailable" then
+			saveLabel.Text = "Sauvegarde indisponible"
+		else
+			saveLabel.Text = "Mode test : sauvegarde inactive"
+		end
 		saveChip.Visible = profile.persistence ~= "DataStore"
 	end
 

@@ -5,12 +5,125 @@ Parcours cible : **Lancement → Hub → Collection → Équipe → Combat → V
 | Jalon | Contenu | État |
 |---|---|---|
 | 1 | Structure Rojo, catalogue, premiers modèles, scène, navigation UI | ✅ Tests Studio OK, rendu visuel à confirmer |
-| 2 | Team Builder, moteur de combat, IA | ✅ Tests de logique OK (Lune), rendu à confirmer dans Studio |
-| 3 | Invocations carte → personnage 3D, interface de combat | ✅ Logique testée (Lune), rendu à confirmer dans Studio |
-| 4 | Boosters, collection, sauvegarde, récompenses | À faire |
+| 2 | Team Builder, moteur de combat, IA | ✅ Tests Studio et Lune OK |
+| 3 | Invocations carte → personnage 3D, interface de combat | ✅ Tests Studio OK, rendu validé sur captures |
+| 4 | Boosters, collection, sauvegarde, récompenses | ✅ Logique testée (Lune), sauvegarde DataStore vérifiée sur 2 sessions Studio |
 | 5 | Tests, corrections, performances, documentation | À faire |
 
-Parcours jouable après le jalon 3 : Lancement → Hub → Collection → Équipe → **Combat en arène 3D** → Victoire (+1 booster crédité). L'ouverture du booster arrive au jalon 4.
+Parcours jouable après le jalon 4 : **Lancement → Hub → Collection → Équipe → Combat → Victoire → Booster → Ouverture → Mise à jour de collection**, avec sauvegarde.
+
+## Jalon 4
+
+### Implémenté
+
+**Boosters** (serveur autoritaire) :
+- `BoosterLogic.roll` tire une rareté selon les poids publiés, puis une carte uniforme dans le pool de cette rareté. Le 5ᵉ emplacement est toujours Rare ou mieux. Le générateur aléatoire est injecté : `Random` en jeu, graine fixe dans les tests.
+- `BoosterLogic.open` vérifie le booster et la quantité possédée, crédite les cartes, puis seulement après consomme le booster. Un refus ne modifie rien.
+- `BoosterService` : remote `OpenBooster`, limitée à 3 ouvertures par 4 s. Le client n'envoie que l'id du booster.
+- Récompenses : 1 booster au premier lancement (profil par défaut) et 1 par victoire (depuis le jalon 2).
+
+**Inventaire** (`Inventory`, nom choisi pour éviter le service Roblox `CollectionService`) :
+- Les doublons sont conservés (compteur d'exemplaires).
+- Un combattant obtenu en booster est débloqué : Oris devient alors utilisable dans le Team Builder.
+- Une carte inconnue est refusée avant toute écriture.
+
+**Sauvegarde** (`ProfileStore` + adaptateurs) :
+- **Profil versionné** (`schemaVersion`), avec migrations déclarées dans `ProfileSchema.Migrations`.
+  - Un profil d'une version plus récente que le jeu est refusé, pour ne pas l'écraser.
+  - Un profil corrompu est réparé champ par champ. Les cartes valides sont toujours conservées, et les réparations sont écrites dans la sortie.
+- **Chargement** : jusqu'à 3 essais. En cas d'échec, la session passe en **lecture seule** (« Sauvegarde indisponible ») et rien n'est jamais réécrit.
+- **Écriture** : `UpdateAsync` avec numéro de révision. Si un autre serveur a sauvegardé entre-temps, ses données sont conservées et la session passe en lecture seule.
+- **Pas d'écriture inutile** : une sauvegarde n'a lieu que si le profil a changé.
+  - Elle se déclenche toutes les 120 s, au départ du joueur et à l'arrêt du serveur (`BindToClose`).
+  - Une seule sauvegarde à la fois par joueur.
+  - Une modification survenue pendant une écriture reste marquée à sauvegarder.
+- **Mode test local** : si le DataStore est indisponible (place non publiée, accès API désactivé), le serveur utilise `MemoryAdapter`.
+  - La sortie affiche « MODE TEST LOCAL ».
+  - Le HUD affiche « Mode test : sauvegarde inactive ». Le jeu ne prétend jamais que les données sont persistées.
+
+**Interface** :
+- **Boosters** :
+  - nombre de boosters possédés et bouton Ouvrir ;
+  - révélation des 5 cartes une par une : dos de carte, retournement, éclat aux couleurs de la rareté à partir de Rare ;
+  - badges « NOUVEAU » / « DÉBLOQUÉ », compteur d'exemplaires ;
+  - « Tout révéler », « Ouvrir un autre », « Terminer » ;
+  - résumé du tirage (combattant débloqué, nouvelles cartes, doublons).
+- **Collection** :
+  - vraies quantités (×N), cartes non obtenues grisées ;
+  - « Possédées X / 10 » ;
+  - la fiche indique le nombre d'exemplaires ou « Pas encore obtenue » ;
+  - mise à jour automatique après une ouverture.
+- **Préférences** (Animations réduites, Invocations rapides) : enregistrées dans le profil (remote `SetSettings`, valeurs validées) et réappliquées au chargement.
+
+### Réellement testé
+
+- **Lune** : **85 réussis, 0 échec**, dont 18 nouveaux tests.
+  - `BoosterLogicSpec` :
+    - 20 000 boosters à graine fixe : fréquences de chaque rareté (emplacements 1-4 et 5) et de **chaque carte** conformes aux taux publiés, à 5 écarts-types ;
+    - jamais de Commune en emplacement 5 ;
+    - bornes, reproductibilité ;
+    - ouverture et refus sans modification ;
+    - doublons, déblocages, id inconnu.
+  - `ProfileStoreSpec` :
+    - aller-retour complet, absence d'écriture inutile ;
+    - modification pendant l'écriture ;
+    - échecs de lecture (rattrapés ou lecture seule), échecs d'écriture ;
+    - conflit entre deux serveurs ;
+    - profil d'une version future, profil corrompu réparé ;
+    - mode DataStore.
+- **Défauts injectés** : un tirage qui ignore la dernière carte de chaque pool, et une sauvegarde sans contrôle de révision, sont tous deux détectés. Le code a ensuite été restauré, et les 85 tests repassent.
+- `selene` : 0 erreur, 0 avertissement. `stylua` conforme. `static_check.py` : 86 fichiers, 265 `require` résolus. `rojo build` OK.
+
+### Vérifié dans Studio (1re exécution)
+
+- **Tests** : `[Tests] 92 réussi(s), 0 échec(s)`.
+- **Mode test** : « MODE TEST LOCAL : DataStore indisponible (place non publiée sur Roblox) ».
+- **Ouverture** : 5 cartes révélées, dont la 5ᵉ Rare (Boussole dimensionnelle). Doublons ×2 et ×3, badges « NOUVEAU », résumé « 2 nouvelle(s) carte(s) ».
+- **Collection** : « Possédées 7 / 10 », quantités ×N, cartes non obtenues grisées, fiche « Exemplaires possédés : 3 ».
+- **Corrigé après capture** :
+  - un libellé vide affichait le texte par défaut de Roblox « Label ». Tous les libellés partent désormais d'un texte vide ;
+  - le booster et la table des taux transparaissaient derrière la révélation. Les deux colonnes sont maintenant masquées pendant la révélation.
+- **Hub, corrigé et revérifié dans Studio par Claude (prise en main de Studio)** :
+  - les noms des statues (panneaux de 14 studs pour 4,4 studs d'écart) se chevauchaient et couvraient le titre « Collection ». Ils sont maintenant compacts et placés sous le titre ;
+  - le paquet flottant couvrait le sous-titre « Boosters », et l'arche coupait le titre « Combat PvE ». Les titres sont remontés ;
+  - le décalage des panneaux est converti dans le repère du support. `StudsOffsetWorldSpace` suit l'orientation de la pièce, et le socle du booster est un cylindre couché.
+
+### Sauvegarde réelle vérifiée (place privée « Collectverse Test », 27/10/2026)
+
+Test mené par Claude dans Studio, sur deux sessions Play successives.
+
+- **Accès API refusé d'abord** : `StudioAccessToApisNotAllowed`. Le serveur est passé proprement en « MODE TEST LOCAL », sans planter. L'onglet Sécurité des paramètres d'expérience n'affichait pas ses interrupteurs (erreur Studio « Failed to parse secrets: Can't parse JSON »). Le réglage est passé après un redémarrage de Studio.
+- **Session 1** : « Sauvegarde DataStore active », bandeau « Mode test » absent, 92 tests réussis.
+  - booster ouvert : Lanterne des… (nouvelle), Lyra, Kael, Terra, Nox ;
+  - collection : « Possédées 6 / 10 », Kael, Terra, Lyra et Nox ×2, Astra et Lanterne ×1, 0 booster ;
+  - équipe : Kael et Astra échangés (Astra devant, Kael derrière), « Équipe enregistrée » ;
+  - options : « Animations réduites » activé ;
+  - arrêt de Play : aucun message « Sauvegarde … échouée » ni « Sauvegarde ignorée ».
+- **Session 2** : « Sauvegarde DataStore active », HUD « Boosters : 0 ». Collection, équipe et option identiques à la fin de la session 1. Aucun « Profil … réparé ».
+- **Non couvert** : sauvegarde périodique (120 s), conflit entre deux serveurs, crédit d'un booster après un combat puis relance.
+
+### À vérifier dans Studio
+
+1. La sortie affiche `[Tests] 92 réussi(s), 0 échec(s)` (85 + `ModelFactorySpec` 4 + `SummonSpec` 3).
+2. Place non publiée : la sortie affiche « MODE TEST LOCAL », et le HUD « Mode test : sauvegarde inactive ».
+3. Boosters :
+   - « Vous possédez 1 booster(s) » au premier lancement ;
+   - ouvrir : révélation des 5 cartes, dont la dernière Rare ou mieux ;
+   - « Tout révéler » termine instantanément ;
+   - le HUD et le compteur passent à 0.
+4. Collection : les cartes obtenues sont colorées avec ×N, les autres grisées, et « Possédées X / 10 » est à jour.
+5. Gagner un combat crédite un booster, que l'on peut ensuite ouvrir.
+6. Si Oris sort d'un booster : badge « DÉBLOQUÉ », puis Oris est sélectionnable dans l'Équipe.
+7. **Sauvegarde réelle** (place publiée de test, accès API activé) :
+   - la sortie affiche « Sauvegarde DataStore active » ;
+   - ouvrir un booster et changer d'équipe, quitter Play puis relancer : collection, boosters, équipe et préférences sont conservés.
+
+### Limitations connues
+
+- Les écritures se font au départ, à l'arrêt ou toutes les 120 s : un crash du serveur peut faire perdre jusqu'à 2 minutes de progression.
+- Pas de verrou de session entre serveurs : un conflit est détecté et ne détruit rien, mais la session la plus ancienne cesse alors de sauvegarder.
+- Les objets n'ont toujours aucune mécanique de jeu.
+
 
 ## Jalon 3
 
