@@ -139,6 +139,14 @@ Le `HumanoidRootPart` d'un rig de type R15 est à hauteur de hanches, pas aux pi
 
 ## 6. Importation Blender → Roblox (Kael)
 
+> **Mis à jour par la V0.2.2** : la procédure a été réellement exécutée et corrigée. Elle est décrite dans [V022_KAEL_PIPELINE.md](V022_KAEL_PIPELINE.md). Changements :
+> - la pièce de pivot s'appelle **`AssetPivot`** et non `Root`, nom de l'os racine (l'éditeur d'animation refuse une pièce et un os de même nom) ;
+> - la mise au contrat est faite par l'outil `Dev/FighterAssetPrep` ;
+> - le modèle est versionné via `build.project.json` ;
+> - Rojo passe en 7.7.1.
+>
+> La suite de cette section décrit le plan initial, conservé pour l'historique.
+
 Ces instructions suivent la procédure documentée par Roblox pour les personnages riggés. **Elles n'ont pas été exécutées ici**, faute de Blender. Les réglages marqués ⚠ dépendent des versions de Blender et de Studio : vérifiez-les lors du premier import.
 
 ### Étape 1 : modélisation et rig dans Blender

@@ -6,6 +6,7 @@ Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats str
 >
 > - Récapitulatif des livrables (modules, tests et résultats, vérifications manuelles, limitations) : [docs/LIVRABLES.md](docs/LIVRABLES.md).
 > - **Audit et stabilisation (version 0.5.1-audit)** : verrou de session des sauvegardes, combats adaptés à l'écran, architecture visuelle V0.2. Voir [docs/AUDIT_V01.md](docs/AUDIT_V01.md).
+> - **V0.2.2 — premier personnage 3D (version 0.6.1-kael)** : pipeline Blender → Roblox de Kael (modèle riggé, rendus, import, contrat, versionnement). Voir [docs/V022_KAEL_PIPELINE.md](docs/V022_KAEL_PIPELINE.md).
 > - **V0.2.1 — fondations visuelles (version 0.6.0-visual)** : cartes premium (cadres par rareté, variantes, holo), ouverture de booster retravaillée, personnage pilote Kael et pipeline Blender → Roblox. Voir [docs/V02_VISUAL_PIPELINE.md](docs/V02_VISUAL_PIPELINE.md).
 > - Détail jalon par jalon : [docs/JALONS.md](docs/JALONS.md). Catalogue : [docs/CATALOGUE.md](docs/CATALOGUE.md).
 
@@ -44,6 +45,15 @@ Autre méthode, sans serveur : générez un fichier de place, puis ouvrez-le dan
 ```bash
 rojo build -o Collectverse.rbxlx
 ```
+
+Pour inclure les modèles 3D finaux (`assets/`, par exemple Kael), utilisez le projet de build :
+
+```bash
+rojo build build.project.json -o Collectverse.rbxlx
+lune run tools/lune/check-fighter-asset -- Collectverse.rbxlx F001_Kael
+```
+
+`default.project.json` ne synchronise pas `assets/` en direct : le plugin ne sait pas définir le maillage d'une MeshPart. Les modèles importés dans la place sont conservés par `rojo serve`.
 
 ### Réglages Studio recommandés
 
@@ -130,7 +140,8 @@ src/server   → ServerScriptService.Server
   Logic/       BoosterLogic (tirage), Inventory (cartes, doublons, déblocages),
                BattleRewards (issue d'un combat), BattleSessions (combats en cours)
                — logique pure, testée avec Lune
-  Dev/         StudioDebug (outils de test, Studio uniquement)
+  Dev/         StudioDebug (outils de test, Studio uniquement),
+               FighterAssetPrep (mise au contrat d'un combattant importé)
 src/client   → StarterPlayerScripts.Client
   Controllers/ UIController (navigation), ZoneController, HubAmbience,
                DataController, BattleController, BattleDirector (mise en scène),
@@ -141,7 +152,9 @@ src/client   → StarterPlayerScripts.Client
   UI/          Components, CardTile (carte premium), RevealTimeline (ouverture des boosters),
                Hud, Motion, Screens/
 tests        → ServerScriptService.Tests         (Studio uniquement)
-tools        → scripts hors Roblox
+tools        → scripts hors Roblox (Lune : tests, check-fighter-asset)
+art          → production 3D (Blender), hors du jeu : art/kael
+assets       → modèles finaux versionnés (.rbxm), inclus par build.project.json
 ```
 
 Correspondance avec l'architecture cible :

@@ -4,6 +4,8 @@
 *.rbxl.lock
 *.rbxlx.lock
 *.rbxm
+# Modèles versionnés volontairement (assets finaux, voir build.project.json)
+!assets/**/*.rbxm
 sourcemap.json
 
 # Python
@@ -12,3 +14,7 @@ __pycache__/
 # Système
 .DS_Store
 Thumbs.db
+
+# Blender : sauvegardes automatiques et copies de textures des exports FBX
+*.blend1
+*.fbm/

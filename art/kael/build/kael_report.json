@@ -1,0 +1,111 @@
+{
+  "blender": "4.2.23 LTS",
+  "height": 6.6,
+  "minZ": 0.0,
+  "vertices": 1560,
+  "triangles": 2892,
+  "bones": [
+    "Root",
+    "HumanoidRootPart",
+    "LowerTorso",
+    "UpperTorso",
+    "Head",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot"
+  ],
+  "boneCount": 17,
+  "maxInfluencesPerVertex": 2,
+  "unweightedVertices": 0,
+  "materials": 1,
+  "texture": "F001_Kael_Palette.png",
+  "textureSize": 64,
+  "animations": {
+    "Idle": {
+      "frames": 60,
+      "fps": 30,
+      "loop": true
+    },
+    "Attack": {
+      "frames": 24,
+      "fps": 30,
+      "loop": false
+    },
+    "Skill": {
+      "frames": 36,
+      "fps": 30,
+      "loop": false
+    },
+    "Ultimate": {
+      "frames": 60,
+      "fps": 30,
+      "loop": false
+    },
+    "Defend": {
+      "frames": 20,
+      "fps": 30,
+      "loop": false
+    },
+    "Hit": {
+      "frames": 14,
+      "fps": 30,
+      "loop": false
+    },
+    "Defeat": {
+      "frames": 40,
+      "fps": 30,
+      "loop": false
+    }
+  },
+  "budget": {
+    "maxTriangles": 6000,
+    "maxBones": 20,
+    "maxInfluences": 4,
+    "textureSize": 64
+  },
+  "checks": {
+    "triangles": true,
+    "bones": true,
+    "influences": true,
+    "allVerticesWeighted": true,
+    "feetOnGround": true,
+    "height": true
+  },
+  "valid": true,
+  "files": {
+    "modelFbx": "F001_Kael.fbx",
+    "modelGlb": "F001_Kael.glb",
+    "animations": {
+      "Idle": "animations/F001_Kael_Idle.fbx",
+      "Attack": "animations/F001_Kael_Attack.fbx",
+      "Skill": "animations/F001_Kael_Skill.fbx",
+      "Ultimate": "animations/F001_Kael_Ultimate.fbx",
+      "Defend": "animations/F001_Kael_Defend.fbx",
+      "Hit": "animations/F001_Kael_Hit.fbx",
+      "Defeat": "animations/F001_Kael_Defeat.fbx"
+    },
+    "blend": "F001_Kael.blend"
+  },
+  "renders": [
+    "renders/kael_front.png",
+    "renders/kael_three_quarter.png",
+    "renders/kael_side.png",
+    "renders/kael_back.png",
+    "renders/kael_pose_Idle.png",
+    "renders/kael_pose_Attack.png",
+    "renders/kael_pose_Skill.png",
+    "renders/kael_pose_Ultimate.png",
+    "renders/kael_pose_Defend.png",
+    "renders/kael_pose_Hit.png",
+    "renders/kael_pose_Defeat.png"
+  ]
+}

@@ -22,7 +22,8 @@ return function(test, expect)
 			expect.equal(VisualAssets.cardArt(card.id), nil, card.id .. " : illustration provisoire")
 		end
 		for _, fighter in CardCatalog.getFighters() do
-			expect.equal(VisualAssets.modelName(fighter.id), fighter.id, "modèle cherché sous l'id")
+			local expected = if fighter.id == "F001" then "F001_Kael" else fighter.id
+			expect.equal(VisualAssets.modelName(fighter.id), expected, "nom du modèle cherché")
 			for _, kind in VisualAssets.AnimationKinds do
 				expect.equal(VisualAssets.animation(fighter.id, kind), nil, "mouvement générique")
 			end

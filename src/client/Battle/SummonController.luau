@@ -235,11 +235,12 @@ local function addHighlight(model: Model, tint: Color3?)
 	highlight.Parent = model
 end
 
-export type Options = { mode: Mode, tint: Color3? }
+-- assetsFolder : dossier de modèles injecté (tests), sinon celui du jeu.
+export type Options = { mode: Mode, tint: Color3?, assetsFolder: Instance? }
 
 -- Invoque un combattant à `footCFrame` et renvoie son modèle (attend la fin de l'animation).
 function SummonController.summon(unit, footCFrame: CFrame, parent: Instance, options: Options): Model
-	local model = ModelFactory.build(unit.fighterId)
+	local model = ModelFactory.build(unit.fighterId, { assetsFolder = options.assetsFolder })
 	GraphicsQuality.applyToModel(model)
 	model.Name = unit.uid
 	model:SetAttribute("Uid", unit.uid)

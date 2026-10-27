@@ -46,9 +46,14 @@ VisualAssets.ActionAnimation = Freeze.deep({
 -- l'identifiant réel obtenu à l'importation dans Roblox (voir V02_VISUAL_PIPELINE).
 local Cards: { [string]: any } = {
 	-- Personnage pilote V0.2 : carte premium à reflet holographique (variante
-	-- d'édition, la rareté affichée reste Commune). Ajouter ici, une fois importés :
-	-- art = "rbxassetid://…", model = "F001_Kael", animations = { … }.
-	F001 = { variant = "Holo" },
+	-- d'édition, la rareté affichée reste Commune) et premier modèle 3D riggé
+	-- (art/kael, importé puis mis au contrat par Dev/FighterAssetPrep). Le modèle
+	-- vit dans ReplicatedStorage.Assets.Fighters (assets/Fighters/F001_Kael.rbxm) ;
+	-- absent ou non conforme, le modèle provisoire est utilisé.
+	-- À ajouter quand ils existeront (identifiants réels uniquement) :
+	--   art = "rbxassetid://…" (illustration officielle),
+	--   animations = { Idle = "rbxassetid://…", … } (animations publiées).
+	F001 = { variant = "Holo", model = "F001_Kael" },
 }
 
 VisualAssets.Cards = Freeze.deep(Cards)

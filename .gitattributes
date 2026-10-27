@@ -3,3 +3,8 @@
 * text=auto eol=lf
 *.rbxl binary
 *.rbxm binary
+*.rbxmx binary
+*.fbx binary
+*.glb binary
+*.blend binary
+*.png binary

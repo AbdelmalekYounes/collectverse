@@ -5,6 +5,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage.Shared
 local CardCatalog = require(Shared.Catalog.CardCatalog)
 local ModelFactory = require(Shared.Visuals.ModelFactory)
+local VisualAssets = require(Shared.Visuals.VisualAssets)
 local Client = StarterPlayer.StarterPlayerScripts.Client
 local SummonController = require(Client.Battle.SummonController)
 local FighterAnimator = require(Client.Battle.FighterAnimator)
@@ -95,25 +96,15 @@ return function(test, expect)
 		model:Destroy()
 	end)
 
-	-- Place un asset de test dans ReplicatedStorage.Assets.Fighters le temps d'un appel.
-	local function withAsset(asset: Model, callback: () -> ())
-		local createdAssets = ReplicatedStorage:FindFirstChild("Assets") == nil
-		local assets = ReplicatedStorage:FindFirstChild("Assets") or Instance.new("Folder")
-		assets.Name = "Assets"
-		assets.Parent = ReplicatedStorage
-		local createdFighters = assets:FindFirstChild("Fighters") == nil
-		local fighters = assets:FindFirstChild("Fighters") or Instance.new("Folder")
-		fighters.Name = "Fighters"
-		fighters.Parent = assets
-		asset.Parent = fighters
-		local ok, err = pcall(callback)
-		asset:Destroy()
-		if createdFighters then
-			fighters:Destroy()
-		end
-		if createdAssets then
-			assets:Destroy()
-		end
+	-- Dossier de modèles isolé, jamais parenté dans le jeu : les tests tournent
+	-- pendant que le jeu démarre (Hub, statues) et ne doivent pas toucher au vrai
+	-- ReplicatedStorage.Assets.Fighters.
+	local function withAsset(asset: Model, callback: (folder: Folder) -> ())
+		local folder = Instance.new("Folder")
+		folder.Name = "Fighters"
+		asset.Parent = folder
+		local ok, err = pcall(callback, folder)
+		folder:Destroy()
 		if not ok then
 			error(err, 0)
 		end
@@ -121,14 +112,14 @@ return function(test, expect)
 
 	test("un asset final conforme remplace le modèle provisoire", function()
 		local asset = Instance.new("Model")
-		asset.Name = "F001"
+		asset.Name = VisualAssets.modelName("F001")
 		local root = Instance.new("Part")
 		root.Name = "AssetRoot"
 		root.Anchored = true
 		root.Parent = asset
 		asset.PrimaryPart = root
-		withAsset(asset, function()
-			local built = ModelFactory.build("F001")
+		withAsset(asset, function(fighters)
+			local built = ModelFactory.build("F001", { assetsFolder = fighters })
 			expect.truthy(built:FindFirstChild("AssetRoot"), "asset cloné")
 			expect.equal(built:GetAttribute("FighterId"), "F001")
 			built:Destroy()
@@ -165,14 +156,15 @@ return function(test, expect)
 	end)
 
 	test("Kael : un modèle riggé conforme est utilisé et invoqué comme le provisoire", function()
-		withAsset(motorRig("F001"), function()
+		withAsset(motorRig(VisualAssets.modelName("F001")), function(fighters)
 			local folder = Instance.new("Folder")
 			folder.Parent = Workspace
 			local unit = { uid = "A1", fighterId = "F001", name = "Kael", element = "Fire", side = "Ally", slot = 1 }
 			local target = CFrame.new(0, 500, 0)
 			local ok, err = pcall(function()
 				for _, mode in { "instant", "reduced" } do
-					local model = SummonController.summon(unit, target, folder, { mode = mode })
+					local model =
+						SummonController.summon(unit, target, folder, { mode = mode, assetsFolder = fighters })
 					expect.truthy(model:FindFirstChild("UpperTorso"), mode .. " : modèle riggé utilisé")
 					expect.equal(model:GetAttribute("FighterId"), "F001")
 					expect.near((model:GetPivot().Position - target.Position).Magnitude, 0, 1e-2, mode .. " : position")
@@ -194,10 +186,10 @@ return function(test, expect)
 		local loose = Instance.new("Part")
 		loose.Name = "AssetBody"
 		loose.Parent = asset -- pas de PrimaryPart
-		withAsset(asset, function()
+		withAsset(asset, function(fighters)
 			local valid = ModelFactory.validateAsset(asset)
 			expect.falsy(valid, "contrat non respecté")
-			local built = ModelFactory.build("F002")
+			local built = ModelFactory.build("F002", { assetsFolder = fighters })
 			expect.falsy(built:FindFirstChild("AssetBody"), "asset non utilisé")
 			expect.truthy(built.PrimaryPart, "modèle provisoire complet")
 			built:Destroy()

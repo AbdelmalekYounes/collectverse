@@ -4,7 +4,7 @@
 local Freeze = require(script.Parent.Parent.Util.Freeze)
 
 local GameConfig = {
-	Version = "0.6.0-visual",
+	Version = "0.6.1-kael",
 
 	Team = {
 		Size = 5,

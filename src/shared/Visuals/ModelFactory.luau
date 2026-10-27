@@ -235,9 +235,16 @@ local function declaresAnimations(fighterId: string): boolean
 	return false
 end
 
-local function findAsset(fighterId: string): Model?
+-- Dossier des modèles finaux du jeu : ReplicatedStorage.Assets.Fighters.
+local function defaultAssetsFolder(): Instance?
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
-	local fighters = assets and assets:FindFirstChild("Fighters")
+	return assets and assets:FindFirstChild("Fighters")
+end
+
+-- `folder` remplace le dossier du jeu (tests : dossier isolé, jamais partagé
+-- avec le jeu en cours d'exécution).
+local function findAsset(fighterId: string, folder: Instance?): Model?
+	local fighters = folder or defaultAssetsFolder()
 	local model = fighters and fighters:FindFirstChild(VisualAssets.modelName(fighterId))
 	if not model then
 		return nil
@@ -360,9 +367,13 @@ function ModelFactory.buildPlaceholder(fighterId: string): Model
 	return model
 end
 
+export type BuildOptions = {
+	assetsFolder: Instance?, -- dossier de modèles à utiliser à la place de celui du jeu
+}
+
 -- Renvoie un nouveau modèle (asset final s'il existe, sinon provisoire).
-function ModelFactory.build(fighterId: string): Model
-	local asset = findAsset(fighterId)
+function ModelFactory.build(fighterId: string, options: BuildOptions?): Model
+	local asset = findAsset(fighterId, options and options.assetsFolder)
 	if asset then
 		local clone = asset:Clone()
 		clone:SetAttribute("FighterId", fighterId)
