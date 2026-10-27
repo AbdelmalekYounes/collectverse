@@ -1,16 +1,20 @@
 -- Point d'entrée serveur.
 -- Jalon 1 : validation du catalogue, ambiance et construction du Hub.
--- Les services de jeu (équipes, combat, boosters, sauvegarde) arrivent aux jalons 2 et 4.
+-- Jalon 2 : remotes, profils (session), équipes et combats PvE.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage.Shared
 local GameConfig = require(Shared.Config.GameConfig)
 local CatalogValidator = require(Shared.Catalog.CatalogValidator)
+local Remotes = require(Shared.Net.Remotes)
 
-local World = script.Parent.World
-local LightingSetup = require(World.LightingSetup)
-local HubBuilder = require(World.HubBuilder)
+local Server = script.Parent
+local LightingSetup = require(Server.World.LightingSetup)
+local HubBuilder = require(Server.World.HubBuilder)
+local PlayerDataService = require(Server.Services.PlayerDataService)
+local TeamService = require(Server.Services.TeamService)
+local BattleService = require(Server.Services.BattleService)
 
 -- Un catalogue incohérent ne doit jamais atteindre les joueurs : on s'arrête net.
 local errors = CatalogValidator.validateAll()
@@ -20,6 +24,11 @@ if #errors > 0 then
 	end
 	error(string.format("[Collectverse] Catalogue invalide (%d erreur(s)), démarrage interrompu", #errors))
 end
+
+Remotes.createServer()
+PlayerDataService.start()
+TeamService.start()
+BattleService.start()
 
 LightingSetup.apply()
 HubBuilder.build()

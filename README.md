@@ -2,8 +2,8 @@
 
 Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats stratégiques au tour par tour.
 
-> **État : jalon 1 sur 5.** Structure Rojo, catalogue, modèles provisoires, Hub 3D et navigation UI.
-> Le combat, les boosters et la sauvegarde ne sont pas encore jouables. Voir [docs/JALONS.md](docs/JALONS.md).
+> **État : jalon 2 sur 5.** Hub, collection, Team Builder et combat PvE 5 contre 5 contre l'IA.
+> L'arène 3D, l'ouverture des boosters et la sauvegarde ne sont pas encore disponibles. Voir [docs/JALONS.md](docs/JALONS.md).
 
 ## Installation
 
@@ -66,6 +66,20 @@ Ils sont aussi copiés dans les attributs `TestsPassed` / `TestsFailed` de `Work
 
 ### Hors Studio
 
+Les tests de logique pure (catalogue, règles, combat, IA, sécurité) tournent avec [Lune](https://github.com/lune-org/lune), installé par `rokit install` :
+
+```bash
+lune run tools/lune/run-tests
+```
+
+Pour ne lancer que certaines specs :
+
+```bash
+lune run tools/lune/run-tests -- BattleEngineSpec CombatAISpec
+```
+
+Le script charge les modules tels quels, dans une imitation minimale de l'arbre Rojo. `ModelFactorySpec`, qui crée des Instances Roblox, reste réservée à Studio. Le code de sortie vaut 1 en cas d'échec.
+
 ```bash
 python tools/static_check.py
 ```
@@ -82,10 +96,15 @@ selene src tests
 src/shared   → ReplicatedStorage.Shared          (client + serveur)
   Config/      Theme (palette, polices), GameConfig (règles et équilibrage)
   Catalog/     données déclaratives + validation + textes générés
+  Battle/      règles d'équipe, ciblage, effets, moteur, IA (logique pure)
+  Net/         liste des remotes
   Visuals/     apparences des combattants, séparées du gameplay
   Util/        Freeze (gel des données)
 src/server   → ServerScriptService.Server
   World/       HubBuilder (scène), LightingSetup
+  Services/    PlayerDataService, TeamService, BattleService
+  Net/         RemoteGuard, RateLimiter
+  Data/        ProfileTemplate (profil versionné)
 src/client   → StarterPlayerScripts.Client
   Controllers/ UIController (navigation), ZoneController, HubAmbience
   State/       ClientSettings (préférences de présentation)
@@ -100,11 +119,11 @@ Correspondance avec l'architecture cible :
 |---|---|---|
 | CardCatalog | `shared/Catalog/CardCatalog` | 1 ✅ |
 | UIController | `client/Controllers/UIController` | 1 ✅ |
+| TeamService | `server/Services/TeamService` + `shared/Battle/TeamRules` | 2 ✅ |
+| BattleEngine, AbilitySystem, CombatAI | `shared/Battle` (logique pure) + `server/Services/BattleService` | 2 ✅ |
+| PlayerDataService | `server/Services/PlayerDataService` (session ; DataStore au jalon 4) | 2 ◐ |
 | SummonController | `client/Controllers` + `shared/Visuals/ModelFactory` (modèles prêts) | 3 |
-| TeamService | `server/Services` | 2 |
-| BattleEngine, AbilitySystem, CombatAI | `shared/Battle` (logique pure, testable) + `server/Services` | 2 |
 | CollectionService, BoosterService | `server/Services` | 4 |
-| PlayerDataService | `server/Services` (DataStore + adaptateur simulé) | 4 |
 
 Principes :
 

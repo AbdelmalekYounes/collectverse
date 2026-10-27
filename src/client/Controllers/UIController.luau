@@ -16,6 +16,8 @@ local UserInputService = game:GetService("UserInputService")
 
 local Theme = require(ReplicatedStorage.Shared.Config.Theme)
 
+local DataController = require(script.Parent.DataController)
+
 local UI = script.Parent.Parent.UI
 local Components = require(UI.Components)
 local Motion = require(UI.Motion)
@@ -242,6 +244,10 @@ function UIController.init()
 	local uiScale = new("UIScale", { Parent = canvas })
 
 	hud = Hud.create(canvas, UIController)
+	DataController.Changed:Connect(hud.setProfile)
+	if DataController.getProfile() then
+		hud.setProfile(DataController.getProfile())
+	end
 
 	overlay = new("TextButton", {
 		Name = "Overlay",

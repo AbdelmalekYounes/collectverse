@@ -24,7 +24,7 @@ local NAV_WIDTH = 150
 
 export type HudApi = {
 	setActive: (screenId: string?) -> (),
-	setBoosterCount: (count: number?) -> (),
+	setProfile: (profile: any) -> (),
 }
 
 function Hud.create(canvas: Frame, controller): HudApi
@@ -69,8 +69,12 @@ function Hud.create(canvas: Frame, controller): HudApi
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
 	})
-	Components.chip("Prototype v0.1", Theme.Colors.TextMuted, 1).Parent = status
-	local boosterChip = Components.chip("Boosters : —", Theme.Colors.Gold, 2)
+	-- Avertissement explicite : la progression n'est pas encore sauvegardée.
+	local saveChip = Components.chip("Sauvegarde inactive", Theme.Colors.Coral, 1)
+	saveChip.Visible = false
+	saveChip.Parent = status
+	Components.chip("Prototype", Theme.Colors.TextMuted, 2).Parent = status
+	local boosterChip = Components.chip("Boosters : —", Theme.Colors.Gold, 3)
 	boosterChip.Parent = status
 	local boosterLabel = boosterChip:FindFirstChildOfClass("TextLabel") :: TextLabel
 
@@ -126,8 +130,13 @@ function Hud.create(canvas: Frame, controller): HudApi
 		end
 	end
 
-	function api.setBoosterCount(count: number?)
-		boosterLabel.Text = "Boosters : " .. (if count then tostring(count) else "—")
+	function api.setProfile(profile)
+		local count = 0
+		for _, quantity in profile.boosters do
+			count += quantity
+		end
+		boosterLabel.Text = "Boosters : " .. count
+		saveChip.Visible = profile.persistence ~= "DataStore"
 	end
 
 	return api

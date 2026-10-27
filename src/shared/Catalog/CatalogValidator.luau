@@ -11,6 +11,7 @@ local Rarities = require(Catalog.Rarities)
 local Statuses = require(Catalog.Statuses)
 local Targets = require(Catalog.Targets)
 local Boosters = require(Catalog.Boosters)
+local Encounters = require(Catalog.Encounters)
 
 local EFFECT_TYPES = { Damage = true, Heal = true, Shield = true, Status = true }
 local SCALINGS = { attack = true, defense = true, maxHp = true }
@@ -208,6 +209,26 @@ function CatalogValidator.validateBooster(def, errors, getPool)
 	end
 end
 
+function CatalogValidator.validateEncounter(def, errors)
+	local where = "Rencontre " .. tostring(def.id)
+	if not isNonEmptyString(def.name) then
+		table.insert(errors, where .. " : nom manquant")
+	end
+	local enemies = def.enemies
+	if type(enemies) ~= "table" or #enemies < 1 or #enemies > GameConfig.Team.Size then
+		table.insert(errors, where .. " : nombre d'ennemis invalide")
+		return
+	end
+	for index, enemy in enemies do
+		if not CardCatalog.getFighter(enemy.fighterId) then
+			table.insert(errors, string.format("%s : ennemi %d inconnu", where, index))
+		end
+		if enemy.statMultiplier ~= nil and not isPositiveNumber(enemy.statMultiplier) then
+			table.insert(errors, string.format("%s : multiplicateur de l'ennemi %d invalide", where, index))
+		end
+	end
+end
+
 function CatalogValidator.validateAll(): { string }
 	local errors = {}
 
@@ -222,6 +243,12 @@ function CatalogValidator.validateAll(): { string }
 	end
 	for _, def in Boosters do
 		CatalogValidator.validateBooster(def, errors)
+	end
+	for id, def in Encounters do
+		if def.id ~= id then
+			table.insert(errors, "Rencontre " .. tostring(id) .. " : id différent de sa clé")
+		end
+		CatalogValidator.validateEncounter(def, errors)
 	end
 
 	local team = GameConfig.Team

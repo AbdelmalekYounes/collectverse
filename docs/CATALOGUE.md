@@ -54,14 +54,38 @@ Ciblage des actions :
 
 Le validateur impose par exemple que des dégâts visent des ennemis, que soins et boucliers ne visent pas d'ennemi, et qu'une action défensive ne vise pas l'adversaire.
 
-## Formules prévues pour le jalon 2
+## Règles de combat (jalon 2)
 
-Les constantes sont dans `GameConfig.Battle`.
+Les constantes sont dans `GameConfig.Battle`. Le combat ne comporte aucun hasard : un même plan donne toujours le même résultat.
 
-- Dégâts : `power × stat × 100 / (100 + DÉF)` × multiplicateur élémentaire × modificateurs de statut. Le résultat est arrondi, avec un minimum de 1.
-- Éléments : Eau > Feu > Terre > Foudre > Eau (×1,25 / ×0,85). Ombre et Lumière ont l'avantage l'une sur l'autre (×1,25).
-- Énergie d'équipe : 3 au départ, +3 par tour, plafond de 10.
-- Jauge d'ultime : +25 par action, +10 par coup reçu, 100 pour lancer.
+- **Dégâts** : `power × stat × 100 / (100 + DÉF effective)`, multipliés par l'élément puis par la Garde (×0,5). Le résultat est arrondi, avec un minimum de 1.
+- **Modificateurs** : Attaque renforcée et Armure brisée modifient l'ATQ et la DÉF effectives.
+- **Éléments** : Eau > Feu > Terre > Foudre > Eau (×1,25 / ×0,85). Ombre et Lumière ont l'avantage l'une sur l'autre (×1,25).
+- **Bouclier** : absorbe les dégâts avant les PV ; il se cumule, plafonné aux PV max.
+- **Soins** : plafonnés aux PV max.
+- **Énergie d'équipe** :
+  - 3 au départ, +3 par tour, plafond de 10 ;
+  - +1 quand un combattant se défend ;
+  - dépensée au moment où l'action s'exécute.
+- **Jauge d'ultime** : +25 par action, +10 par coup reçu ; elle doit être pleine (100) pour lancer l'ultime, puis retombe à 0.
+- **Tour** :
+  1. Le joueur donne un ordre par combattant ; sans ordre, le combattant fait une attaque normale.
+  2. Les actions s'exécutent par vitesse décroissante. À égalité, le camp allié agit d'abord, puis le plus petit emplacement.
+  3. En fin de tour : Brûlure et Régénération, puis les durées diminuent, puis l'énergie augmente.
+- **Ciblage** :
+  - La ligne avant protège la ligne arrière tant qu'il y reste un combattant debout.
+  - La Provocation redirige toute attaque ciblée vers le provocateur.
+  - Si la cible choisie est tombée avant l'action, celle-ci vise la première cible valide.
+- **Étourdissement** : le combattant perd sa prochaine action, même si l'étourdissement est appliqué en cours de tour, après son action.
+- **Fin du combat** : dès qu'un camp n'a plus de combattant debout ; égalité après 30 tours.
+
+## Rencontres PvE
+
+| ID | Nom | Échos (avant / arrière) | Statistiques |
+|---|---|---|---|
+| RiftEcho1 | Faille instable | Terra, Kael, Nox / Lyra, Astra | 85 % |
+
+Récompense de victoire : 1 booster First Rift (`GameConfig.Progression.VictoryBoosters`).
 
 ## Booster First Rift : probabilités exactes
 
