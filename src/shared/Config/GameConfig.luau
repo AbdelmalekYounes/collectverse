@@ -62,6 +62,9 @@ local GameConfig = {
 
 	Debug = {
 		RunTestsInStudio = true,
+		-- Sonde de performance des combats (Controllers/PerfProbe) : à activer seulement
+		-- dans une copie de test, pour mesurer sur un vrai téléphone.
+		PerfProbe = false,
 	},
 }
 

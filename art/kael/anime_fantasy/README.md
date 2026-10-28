@@ -19,6 +19,9 @@ Dossier de production indépendant. Rien ici n'est chargé par le jeu : le modè
 | `plate_check.py` | Chevauchement des plaques de combat (10 combattants, PC et mobile) |
 | `flat_render.py` | Rendu à plat de la texture cuite (contrôle de l'atlas) |
 | `export_pass1.py` | Exporte la passe 1 archivée en FBX (comparaison dans Studio) |
+| `af_cape_check.py` | Intersections bras / cape image par image, sur le maillage déformé (`build/cape_check.json`) |
+| `af_rebuild_actions.py` | Reconstruit seulement les 7 actions du `.blend` (maillage et exports inchangés) |
+| `plate_layout.py` | Plaques de combat contre silhouettes et interface, selon le placement (`build/plate_layout.json`) |
 | `studio_sheets.py` | Planches des captures Studio (`build/studio/` → `build/sheets/studio_*.png`) |
 
 ## Produits (`build/`)
@@ -36,6 +39,7 @@ Dossier de production indépendant. Rien ici n'est chargé par le jeu : le modè
 | `plate_check.json` | Contrôle des plaques de combat |
 | `animation_report.json` | Compatibilité des 7 animations (passe 2) |
 | `F001_Kael_AF_candidate.rbxm` | Candidat de la passe 3 préparé dans Studio (contrat OK, maillage et texture téléversés en privé). **Pas la production** |
+| `F001_Kael_AF_LOD_candidate.rbxm` | Variante allégée préparée (`F001_Kael_LOD`, contrat OK, même texture). **Pas la production** |
 | `studio/` | Captures réelles de Roblox Studio (validation) |
 | `archive/` | Passes 1 et 2 (`.blend` aux textures intégrées, FBX, couleur, textures sources, rapports, candidat de la passe 2) |
 | `renders/`, `sheets/`, `stages/` | Rendus, planches, étapes intermédiaires A et B |

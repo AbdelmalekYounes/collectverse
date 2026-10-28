@@ -31,6 +31,33 @@ return function(test, expect)
 		expect.equal(BattleLayout.fieldOfView(0 / 0), BattleLayout.BaseFieldOfView, "NaN")
 	end)
 
+	test("plaques : au sol devant les alliés de la ligne avant, hauteur commune ailleurs", function()
+		expect.truthy(BattleLayout.plateOffset("Ally", "Front", 7.38) < 0, "allié avant : sous les pieds")
+		expect.truthy(
+			BattleLayout.plateOffset("Ally", "Front", 7.38) + 1 <= 0,
+			"le haut de la plaque reste sous le sol"
+		)
+		local reference = BattleLayout.PlateReferenceHeight + BattleLayout.PlateGapAbove
+		for _, case in { { "Ally", "Back" }, { "Enemy", "Front" }, { "Enemy", "Back" } } do
+			expect.equal(
+				BattleLayout.plateOffset(case[1], case[2], 6),
+				reference,
+				case[1] .. case[2] .. " : hauteur commune"
+			)
+			expect.equal(
+				BattleLayout.plateOffset(case[1], case[2], 7.38),
+				reference,
+				"même hauteur pour un modèle plus grand"
+			)
+		end
+		expect.equal(
+			BattleLayout.plateOffset("Enemy", "Front", 9),
+			9 + BattleLayout.PlateGapAbove,
+			"modèle hors norme : au-dessus de sa tête"
+		)
+		expect.equal(BattleLayout.plateOffset("Enemy", "Back", 0 / 0), reference, "hauteur invalide")
+	end)
+
 	test("plaques : marge réduite sur petit écran, intacte sur grand écran", function()
 		local _, pixelsPc = BattleLayout.plateSize(1080)
 		local _, pixelsPhone, _, heightPhone = BattleLayout.plateSize(413)

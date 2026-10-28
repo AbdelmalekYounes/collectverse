@@ -439,6 +439,13 @@ def assemble(rig, body, head, head_parts, pieces):
 # nouveau squelette. Seuls les déplacements du bassin (« loc », en studs) sont mis à
 # l'échelle des nouvelles jambes (hanche à 3,55 au lieu de 2,85).
 LEG_RATIO = 3.55 / 2.85
+# Bras de la Compétence (angles dans les axes du personnage : tangage, roulis,
+# lacet ; voir kael_build). Remplacent ceux de la production aux images 8, 20, 30.
+SKILL_ARMS = {
+    8: {"RightUpperArm": (-40, 62, 0), "LeftUpperArm": (-40, -45, 0)},
+    20: {"RightUpperArm": (-40, 66, 0), "LeftUpperArm": (-40, -45, 0)},
+    30: {"RightUpperArm": (-30, 45, 0), "LeftUpperArm": (-30, -28, 0)},
+}
 
 
 def remove_hidden_body(body):
@@ -524,6 +531,12 @@ def build_animations(rig):
     defend = scaled["Defend"]
     defend["keys"][30] = base.pose()
     defend["length"] = 30
+    # Compétence (V0.2.5, après validation Studio) : bras écartés à 80–85° purs, le
+    # haut des brassards remontait dans le tombé de cape sur l'épaule (cape rigide,
+    # pesée sur le torse). Bras levés un peu vers l'avant et un peu moins écartés :
+    # même rotation, même silhouette, la cape passe derrière les bras.
+    for frame, arms in SKILL_ARMS.items():
+        scaled["Skill"]["keys"][frame].update(arms)
     original = base.ANIMATIONS
     base.ANIMATIONS = scaled
     try:

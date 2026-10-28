@@ -21,6 +21,9 @@ EffectsPolicy.Budgets = Freeze.deep({
 		-- dos et les braises de la cape de Kael disparaissent (validé dans Studio, V0.2.5).
 		arenaLight = true,
 		modelParticles = true, -- particules permanentes portées par un modèle (braises de Kael)
+		-- Détail des modèles 3D : "Low" prend la variante allégée (VisualAssets.lodModelName)
+		-- quand elle existe. Roblox ne la choisit jamais seul (voir VisualAssets).
+		modelDetail = "High",
 		rarityBurst = true, -- éclat derrière les cartes rares à l'ouverture
 	},
 	Reduced = {
@@ -28,6 +31,7 @@ EffectsPolicy.Budgets = Freeze.deep({
 		dynamicLights = false,
 		arenaLight = true,
 		modelParticles = false,
+		modelDetail = "Low",
 		rarityBurst = false,
 	},
 })

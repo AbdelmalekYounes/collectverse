@@ -51,4 +51,24 @@ function BattleLayout.plateSize(viewportHeight: number): (number, number, number
 		math.round(PLATE_PIXELS.height * factor)
 end
 
+-- Hauteur des plaques (centre, en studs au-dessus des pieds du combattant).
+-- La caméra est derrière les alliés : la plaque d'un allié de la ligne avant,
+-- posée au-dessus de sa tête, se projetait sur l'Écho qui lui fait face et en
+-- masquait jusqu'à 41 % (V0.2.5, art/kael/anime_fantasy/plate_layout.py). Elle est
+-- posée au sol, devant ses pieds. Les autres plaques restent au-dessus des têtes,
+-- à une hauteur commune par ligne (le plus grand modèle prévu) : avec des modèles
+-- de tailles différentes, une plaque plus haute que ses voisines chevauchait la
+-- ligne arrière.
+BattleLayout.PlateReferenceHeight = 7.4 -- plus grand combattant prévu (Kael Anime Fantasy : 7,38)
+BattleLayout.PlateGapAbove = 2.4
+BattleLayout.PlateBelowFeet = -1.3 -- plaque de 2 studs : son haut reste juste sous le sol
+
+function BattleLayout.plateOffset(side: string, row: string, modelHeight: number): number
+	if side == "Ally" and row == "Front" then
+		return BattleLayout.PlateBelowFeet
+	end
+	local height = if modelHeight == modelHeight then modelHeight else 0
+	return math.max(height, BattleLayout.PlateReferenceHeight) + BattleLayout.PlateGapAbove
+end
+
 return BattleLayout

@@ -96,6 +96,16 @@ function VisualAssets.modelName(fighterId: string): string
 	return data and data.model or fighterId
 end
 
+-- Variante allégée (LOD) d'un modèle : même dossier, même rig, nom suffixé « _LOD ».
+-- Roblox ne choisit jamais lui-même ce modèle (RenderFidelity ne simplifie que le
+-- maillage d'une même MeshPart) : ModelFactory le prend quand le budget d'effets
+-- demande le détail bas (EffectsPolicy.modelDetail), sinon le modèle principal.
+VisualAssets.LodSuffix = "_LOD"
+
+function VisualAssets.lodModelName(fighterId: string): string
+	return VisualAssets.modelName(fighterId) .. VisualAssets.LodSuffix
+end
+
 -- AnimationId d'une animation spécifique, ou nil (fallback : mouvement générique).
 function VisualAssets.animation(fighterId: string, kind: string): string?
 	local data = entry(fighterId)

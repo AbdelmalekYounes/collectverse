@@ -243,21 +243,24 @@ end
 
 -- `folder` remplace le dossier du jeu (tests : dossier isolé, jamais partagé
 -- avec le jeu en cours d'exécution).
-local function findAsset(fighterId: string, folder: Instance?): Model?
+local function findAsset(fighterId: string, folder: Instance?, name: string?): Model?
 	local fighters = folder or defaultAssetsFolder()
-	local model = fighters and fighters:FindFirstChild(VisualAssets.modelName(fighterId))
+	local model = fighters and fighters:FindFirstChild(name or VisualAssets.modelName(fighterId))
 	if not model then
 		return nil
 	end
 	local valid, reason = ModelFactory.validateAsset(model)
 	if not valid then
-		if not warned[fighterId] then
-			warned[fighterId] = true
+		local key = fighterId .. ":" .. (name or "main")
+		if not warned[key] then
+			warned[key] = true
 			warn(
 				string.format(
-					"[ModelFactory] Asset de %s ignoré (%s) : modèle provisoire utilisé",
+					"[ModelFactory] Asset %s de %s ignoré (%s) : %s",
+					model.Name,
 					fighterId,
-					reason
+					tostring(reason),
+					if name then "modèle principal utilisé" else "modèle provisoire utilisé"
 				)
 			)
 		end
@@ -369,11 +372,22 @@ end
 
 export type BuildOptions = {
 	assetsFolder: Instance?, -- dossier de modèles à utiliser à la place de celui du jeu
+	detail: string?, -- "Low" : variante allégée (VisualAssets.lodModelName) si elle existe
 }
 
--- Renvoie un nouveau modèle (asset final s'il existe, sinon provisoire).
+-- Renvoie un nouveau modèle : variante allégée si demandée et présente, sinon asset
+-- final, sinon provisoire.
 function ModelFactory.build(fighterId: string, options: BuildOptions?): Model
-	local asset = findAsset(fighterId, options and options.assetsFolder)
+	local folder = options and options.assetsFolder
+	local asset = nil
+	if options and options.detail == "Low" then
+		local fighters = folder or defaultAssetsFolder()
+		local lodName = VisualAssets.lodModelName(fighterId)
+		if fighters and fighters:FindFirstChild(lodName) then
+			asset = findAsset(fighterId, folder, lodName)
+		end
+	end
+	asset = asset or findAsset(fighterId, folder)
 	if asset then
 		local clone = asset:Clone()
 		clone:SetAttribute("FighterId", fighterId)

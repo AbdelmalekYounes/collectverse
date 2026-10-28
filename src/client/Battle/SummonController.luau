@@ -249,7 +249,10 @@ export type Options = { mode: Mode, tint: Color3?, assetsFolder: Instance? }
 
 -- Invoque un combattant à `footCFrame` et renvoie son modèle (attend la fin de l'animation).
 function SummonController.summon(unit, footCFrame: CFrame, parent: Instance, options: Options): Model
-	local model = ModelFactory.build(unit.fighterId, { assetsFolder = options.assetsFolder })
+	local model = ModelFactory.build(
+		unit.fighterId,
+		{ assetsFolder = options.assetsFolder, detail = GraphicsQuality.budget().modelDetail }
+	)
 	GraphicsQuality.applyToModel(model)
 	model.Name = unit.uid
 	model:SetAttribute("Uid", unit.uid)

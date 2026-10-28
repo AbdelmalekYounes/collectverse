@@ -236,6 +236,49 @@ def main():
         ],
     )
 
+    sheet(
+        os.path.join(OUT, "studio_finalisation.png"),
+        "Studio : finalisation avant intégration (Skill, LOD, plaques)",
+        "Captures réelles de Roblox Studio. Skill et LOD : banc d'essai ; plaques : vrai combat (Play) et banc.",
+        [
+            (
+                "Skill : bras devant la cape (avant : passe 2, après : correction)",
+                [
+                    (load("check_Skill_cape", 380), "Avant, 0,67 s : bras dans la cape"),
+                    (load("fix_Skill_027", 380), "Après, 0,27 s"),
+                    (load("fix_Skill_067_three", 380), "Après, 0,67 s"),
+                    (load("fix_Skill_100", 380), "Après, 1,0 s"),
+                    (load("fix_Skill_067_front", 380), "Après, 0,67 s, de face"),
+                ],
+            ),
+            (
+                "Modèle principal (13 266 triangles) contre LOD (5 199)",
+                [
+                    (load("lod_front", 360), "Face : principal à gauche, LOD à droite"),
+                    (load("lod_faces", 360), "Visages : principal, LOD"),
+                    (load("lod_combat_main_crop", 360), "Combat 1080p : principal"),
+                    (load("lod_combat_lod_crop", 360), "Combat 1080p : LOD"),
+                ],
+            ),
+            (
+                "Plaques : avant (au-dessus de tous) et après (alliés avant au sol), vrai combat",
+                [
+                    (load("game_full", 380), "Avant : la plaque de l'allié central masque l'ennemi central"),
+                    (load("plates_game_pc", 380), "Après : ennemis dégagés"),
+                    (load("plates_game_select", 380), "Après : sélection de Terra par sa plaque"),
+                ],
+            ),
+            (
+                "Mobile 844 × 390",
+                [
+                    (load("plates_game_mobile", 330), "Vrai combat, après"),
+                    (load("plates_bench_mobile", 330), "Banc, Kael AF des deux côtés"),
+                    (load("plates_bench_mobile_reduced_lod", 330), "Banc, effets réduits + LOD"),
+                ],
+            ),
+        ],
+    )
+
 
 if __name__ == "__main__":
     main()

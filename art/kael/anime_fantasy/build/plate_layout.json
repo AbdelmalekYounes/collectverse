@@ -1,0 +1,1032 @@
+{
+ "actuel : au-dessus de tous": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.33
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.41
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.03
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.03
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.33
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.16
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.16
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.41,
+   "totalHidden": 1.45
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.36
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.42
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.05
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.05
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.36
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.02
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.02
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.42,
+   "totalHidden": 1.66
+  }
+ },
+ "alli\u00e9s avant sous les pieds": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.1
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.1
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.16
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.16
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.16,
+   "totalHidden": 0.52
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.12
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.12
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.02
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.02
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.19,
+   "totalHidden": 0.66
+  }
+ },
+ "tous les alli\u00e9s sous les pieds": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.1
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.1
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.1,
+   "totalHidden": 0.2
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.12
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.12
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.02
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.02
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [
+    [
+     "AllyBack-5",
+     "commandBar"
+    ],
+    [
+     "AllyBack+5",
+     "commandBar"
+    ]
+   ],
+   "offScreen": [],
+   "worstHidden": 0.12,
+   "totalHidden": 0.28
+  }
+ },
+ "alli\u00e9s avant abaiss\u00e9s (t\u00eate + 0,9)": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.18
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.39
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.18
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.16
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.16
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.39,
+   "totalHidden": 1.07
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.2
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.4
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.2
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.02
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.02
+    }
+   ],
+   "plateOverlaps": [
+    [
+     "EnemyBack-5",
+     "EnemyFront+0"
+    ],
+    [
+     "EnemyBack+5",
+     "EnemyFront+0"
+    ]
+   ],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.4,
+   "totalHidden": 1.22
+  }
+ },
+ "hauteur fixe (7,4 + 2,4) pour tous": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.31
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.41
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.31
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.19
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.41,
+   "totalHidden": 1.49
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.34
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.42
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.05
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.05
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.34
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.22
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.22
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.02
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.02
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.42,
+   "totalHidden": 1.68
+  }
+ },
+ "propos\u00e9 : alli\u00e9s avant sous les pieds, autres \u00e0 hauteur fixe": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.1
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.1
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.19
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.19
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.19,
+   "totalHidden": 0.58
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.12
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.12
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.22
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.22
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.02
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.02
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.22,
+   "totalHidden": 0.72
+  }
+ },
+ "actuel : au-dessus de tous | tous \u00e0 7,4": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.26
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.41
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.03
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.03
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.26
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.15
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.15
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.41,
+   "totalHidden": 1.29
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.29
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.42
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.29
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.42,
+   "totalHidden": 1.5
+  }
+ },
+ "alli\u00e9s avant sous les pieds | tous \u00e0 7,4": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.09
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.09
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.15
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.15
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.15,
+   "totalHidden": 0.48
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.11
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.11
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.17,
+   "totalHidden": 0.64
+  }
+ },
+ "tous les alli\u00e9s sous les pieds | tous \u00e0 7,4": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.09
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.09
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.09,
+   "totalHidden": 0.18
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.11
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.11
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [
+    [
+     "AllyBack-5",
+     "commandBar"
+    ],
+    [
+     "AllyBack+5",
+     "commandBar"
+    ]
+   ],
+   "offScreen": [],
+   "worstHidden": 0.11,
+   "totalHidden": 0.3
+  }
+ },
+ "alli\u00e9s avant abaiss\u00e9s (t\u00eate + 0,9) | tous \u00e0 7,4": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.28
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.39
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.28
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.15
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.15
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.39,
+   "totalHidden": 1.25
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.3
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.4
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.3
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.4,
+   "totalHidden": 1.42
+  }
+ },
+ "hauteur fixe (7,4 + 2,4) pour tous | tous \u00e0 7,4": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.26
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.41
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.03
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.03
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.26
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.15
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.15
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.41,
+   "totalHidden": 1.29
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "EnemyFront-10",
+     "fraction": 0.29
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyFront+0",
+     "fraction": 0.42
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "AllyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "EnemyFront+10",
+     "fraction": 0.29
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.42,
+   "totalHidden": 1.5
+  }
+ },
+ "propos\u00e9 : alli\u00e9s avant sous les pieds, autres \u00e0 hauteur fixe | tous \u00e0 7,4": {
+  "pc": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.09
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.09
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.15
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.15
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.15,
+   "totalHidden": 0.48
+  },
+  "mobile": {
+   "modelsHidden": [
+    {
+     "plate": "AllyFront-10",
+     "model": "AllyBack-5",
+     "fraction": 0.11
+    },
+    {
+     "plate": "AllyFront+10",
+     "model": "AllyBack+5",
+     "fraction": 0.11
+    },
+    {
+     "plate": "AllyBack-5",
+     "model": "AllyFront-10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "AllyBack+5",
+     "model": "AllyFront+10",
+     "fraction": 0.17
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack-5",
+     "fraction": 0.04
+    },
+    {
+     "plate": "EnemyFront+0",
+     "model": "EnemyBack+5",
+     "fraction": 0.04
+    }
+   ],
+   "plateOverlaps": [],
+   "hudOverlaps": [],
+   "offScreen": [],
+   "worstHidden": 0.17,
+   "totalHidden": 0.64
+  }
+ }
+}

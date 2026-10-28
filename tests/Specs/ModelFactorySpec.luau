@@ -128,6 +128,29 @@ return function(test, expect)
 		end)
 	end)
 
+	test("variante allégée : choisie en détail bas, modèle principal sinon ou en son absence", function()
+		local fighters = Instance.new("Folder")
+		local main = motorRig(VisualAssets.modelName("F001"))
+		main.Parent = fighters
+		local function built(detail)
+			local model = ModelFactory.build("F001", { assetsFolder = fighters, detail = detail })
+			local name = model:GetAttribute("Source")
+			model:Destroy()
+			return name
+		end
+		main:SetAttribute("Source", "main")
+		expect.equal(built("Low"), "main", "pas de variante allégée : modèle principal")
+		local lod = motorRig(VisualAssets.lodModelName("F001"))
+		lod:SetAttribute("Source", "lod")
+		lod.Parent = fighters
+		expect.equal(built("Low"), "lod", "détail bas : variante allégée")
+		expect.equal(built("High"), "main", "détail haut : modèle principal")
+		expect.equal(built(nil), "main", "par défaut : modèle principal")
+		lod.PrimaryPart = nil
+		expect.equal(built("Low"), "main", "variante allégée non conforme : modèle principal")
+		fighters:Destroy()
+	end)
+
 	test("modèle provisoire : pièces soudées, jamais présenté comme riggé", function()
 		local model = ModelFactory.buildPlaceholder("F001")
 		local rig = ModelFactory.describeRig(model)

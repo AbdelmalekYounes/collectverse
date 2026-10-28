@@ -95,9 +95,11 @@ function UnitPlate.create(model: Model, unit, parent: Instance, onClick: (uid: s
 	billboard.Adornee = model.PrimaryPart
 	-- Taille en studs (suit la perspective) + marge en pixels pour rester lisible de loin.
 	applySize(billboard)
-	-- Bas de la plaque environ 1,4 stud au-dessus de la tête. Décalage en espace monde :
+	-- Position par camp et ligne (BattleLayout.plateOffset) : au sol devant les alliés de
+	-- la ligne avant, au-dessus des têtes ailleurs. Décalage en espace monde :
 	-- StudsOffset suivrait l'inclinaison de la caméra et placerait la plaque ~1,4× trop haut.
-	billboard.StudsOffsetWorldSpace = Vector3.new(0, model:GetExtentsSize().Y + 2.4, 0)
+	local offset = BattleLayout.plateOffset(unit.side, unit.row, model:GetExtentsSize().Y)
+	billboard.StudsOffsetWorldSpace = Vector3.new(0, offset, 0)
 	billboard.AlwaysOnTop = true
 	billboard.Active = true
 	billboard.LightInfluence = 0

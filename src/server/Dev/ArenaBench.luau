@@ -32,6 +32,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage.Shared
 local Theme = require(Shared.Config.Theme)
+local TeamRules = require(Shared.Battle.TeamRules)
 local ModelFactory = require(Shared.Visuals.ModelFactory)
 local EffectsPolicy = require(Shared.Visuals.EffectsPolicy)
 local VisualAssets = require(Shared.Visuals.VisualAssets)
@@ -196,6 +197,8 @@ local function fakeUnit(side: string, slot: number, fighterId: string)
 	return {
 		uid = side .. slot,
 		side = side,
+		slot = slot,
+		row = TeamRules.rowOfSlot(slot),
 		name = NAMES[fighterId] or fighterId,
 		hp = 820 - slot * 37,
 		maxHp = 1000,
@@ -219,7 +222,8 @@ function Bench.clear()
 end
 
 -- options : variant ("V022", "P1", "P2"…), look ("A", "B", "C"), effects ("Full",
--- "Reduced"), plates (true par défaut), lineup (false : Kael seuls).
+-- "Reduced"), plates (true par défaut), lineup (false : Kael seuls), detail ("Low" :
+-- variante allégée F001_Kael_LOD du dossier, si elle existe).
 function Bench.stage(options)
 	assert(RunService:IsStudio(), "ArenaBench : Studio uniquement")
 	options = options or {}
@@ -247,7 +251,10 @@ function Bench.stage(options)
 			if fighterId ~= KAEL and options.lineup == false then
 				continue
 			end
-			local model = ModelFactory.build(fighterId, if fighterId == KAEL then { assetsFolder = folder } else nil)
+			local model = ModelFactory.build(
+				fighterId,
+				if fighterId == KAEL then { assetsFolder = folder, detail = options.detail } else nil
+			)
 			model.Name = side .. slot .. "_" .. fighterId
 			local highlight = addHighlight(model, if side == "Enemy" then Theme.Colors.Coral else nil)
 			model:PivotTo(Arena.slotCFrame(side, slot))
@@ -451,7 +458,7 @@ function Bench.measure(seconds: number?): string
 end
 
 -- Les trois versions côte à côte, face à la caméra, dans l'éclairage de l'arène.
-function Bench.versions(variants: { string }?)
+function Bench.versions(variants: { string }?, details: { string }?)
 	Bench.clear()
 	local list = variants or { "V022", "P1", "P2" }
 	Arena.build()
@@ -462,7 +469,8 @@ function Bench.versions(variants: { string }?)
 	state.options = { variant = table.concat(list, "+"), look = "A", effects = "Full" }
 	local center = Arena.slotCFrame("Ally", 2).Position
 	for index, variant in list do
-		local model = ModelFactory.build(KAEL, { assetsFolder = variantFolder(variant) })
+		local model =
+			ModelFactory.build(KAEL, { assetsFolder = variantFolder(variant), detail = details and details[index] })
 		model.Name = "Version_" .. variant
 		local position = center + Vector3.new((index - (#list + 1) / 2) * 5, 0, 0)
 		model:PivotTo(CFrame.lookAt(position, position + Vector3.new(0, 0, 1)))
