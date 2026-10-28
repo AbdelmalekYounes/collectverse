@@ -22,6 +22,7 @@ local Workspace = game:GetService("Workspace")
 local GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 local FrameStats = require(ReplicatedStorage.Shared.Util.FrameStats)
 local TestEnvironment = require(ReplicatedStorage.Shared.Util.TestEnvironment)
+local PerfScenario = require(ReplicatedStorage.Shared.Util.PerfScenario)
 
 local BattleDirector = require(script.Parent.BattleDirector)
 local GraphicsQuality = require(script.Parent.Parent.State.GraphicsQuality)
@@ -71,6 +72,18 @@ local function ensureLabel(): TextLabel
 	return text
 end
 
+local function scenarioName(): string
+	local scenario = PerfScenario.get()
+	if not scenario then
+		return "hors scénario"
+	end
+	local animations = if not scenario.afAnimations
+		then "animations V0.2.3"
+		elseif scenario.animations then "animations AF"
+		else "sans animation AF (mouvements génériques)"
+	return string.format("scénario %s (%s, %s)", scenario.name, scenario.label, animations)
+end
+
 local function context(): string
 	local camera = Workspace.CurrentCamera
 	local size = if camera then camera.ViewportSize else Vector2.zero
@@ -88,7 +101,8 @@ local function start()
 	recorder = FrameStats.newRecorder()
 	local text = ensureLabel()
 	text.Size = UDim2.fromOffset(260, 16)
-	text.Text = "[PerfProbe] mesure…"
+	local scenario = PerfScenario.get()
+	text.Text = "[PerfProbe] " .. (if scenario then "scénario " .. scenario.name else "mesure…")
 	local accumulated, frames, sinceMemory = 0, 0, 0
 	connection = RunService.RenderStepped:Connect(function(dt)
 		local current = recorder :: FrameStats.Recorder
@@ -104,7 +118,12 @@ local function start()
 			end
 		end
 		if accumulated >= 0.5 then
-			text.Text = string.format("[PerfProbe] %s · %.0f i/s", current.phase, frames / accumulated)
+			text.Text = string.format(
+				"[PerfProbe] %s%s · %.0f i/s",
+				if PerfScenario.get() then (PerfScenario.get() :: any).name .. " · " else "",
+				current.phase,
+				frames / accumulated
+			)
 			accumulated, frames = 0, 0
 		end
 	end)
@@ -126,8 +145,9 @@ local function stop(interrupted: boolean)
 		return
 	end
 	local header = string.format(
-		"[PerfProbe] %s | %s | %s",
+		"[PerfProbe] %s | %s | %s | %s",
 		if interrupted then "combat interrompu" else "combat terminé",
+		scenarioName(),
 		context(),
 		memoryTags()
 	)
@@ -161,7 +181,11 @@ function PerfProbe.init()
 			end
 		end
 	end)
-	print("[PerfProbe] actif (environnement de test) : rapport à la fin de chaque combat, par phase")
+	print(
+		"[PerfProbe] actif (environnement de test), "
+			.. scenarioName()
+			.. " : rapport à la fin de chaque combat, par phase"
+	)
 end
 
 return PerfProbe

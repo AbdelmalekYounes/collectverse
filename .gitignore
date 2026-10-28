@@ -6,6 +6,8 @@
 *.rbxm
 # Modèles versionnés volontairement (assets finaux, voir build.project.json)
 !assets/**/*.rbxm
+# Modèles des places de test de performance (branche test/kael-af-perf)
+!perf/assets/**/*.rbxm
 sourcemap.json
 
 # Python
@@ -27,3 +29,6 @@ art/kael/anime_fantasy/build/renders/*_poses/
 
 # Textures extraites par l'importateur 3D de Studio
 art/kael/anime_fantasy/build/**/*.fbm/
+
+# Places de test de performance construites (perf/<A|B|C>.project.json)
+perf/build/

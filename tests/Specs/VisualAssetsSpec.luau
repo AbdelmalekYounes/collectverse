@@ -6,6 +6,7 @@ local Shared = ReplicatedStorage.Shared
 local CardCatalog = require(Shared.Catalog.CardCatalog)
 local VisualAssets = require(Shared.Visuals.VisualAssets)
 local EffectsPolicy = require(Shared.Visuals.EffectsPolicy)
+local PerfScenario = require(Shared.Util.PerfScenario)
 
 local function isKnown(id: string): boolean
 	return CardCatalog.get(id) ~= nil
@@ -37,6 +38,13 @@ return function(test, expect)
 	end)
 
 	test("Kael : les 7 animations sont déclarées, chacune avec un identifiant distinct", function()
+		local scenario = PerfScenario.get()
+		if scenario and scenario.afAnimations and not scenario.animations then
+			-- Place de test de performance B ou C, animations Anime Fantasy pas encore
+			-- publiées : aucune animation, jamais celles de l'ancien squelette.
+			expect.equal(VisualAssets.animation("F001", "Idle"), nil, "pas d'animation V0.2.3 sur Kael AF")
+			return
+		end
 		local seen = {}
 		for _, kind in VisualAssets.AnimationKinds do
 			local id = VisualAssets.animation("F001", kind)

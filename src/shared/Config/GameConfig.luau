@@ -40,7 +40,9 @@ local GameConfig = {
 
 	Save = {
 		SchemaVersion = 1,
-		DataStoreName = "CollectverseProfiles",
+		-- Branche test/kael-af-perf : DataStore séparé, les profils existants ne sont jamais lus
+		-- ni modifiés par les places de test de performance.
+		DataStoreName = "CollectverseProfiles_PerfTest",
 		AutosaveIntervalSeconds = 120,
 		-- Verrou de session (voir ProfileStore) : un verrou non renouvelé depuis ce
 		-- délai est repris sans attendre (serveur arrêté brutalement). Il est renouvelé
@@ -66,7 +68,7 @@ local GameConfig = {
 		-- place dont le PlaceId est listé ici, jamais dans l'expérience publique.
 		TestPlaceIds = {},
 		-- Sonde de performance des combats (Controllers/PerfProbe), par phase.
-		PerfProbe = false,
+		PerfProbe = true, -- branche test/kael-af-perf : actif, mais seulement en environnement de test
 		-- Détail des modèles 3D imposé pour une mesure ("High" ou "Low"), sinon celui
 		-- du budget d'effets. Ignoré hors environnement de test.
 		ForceModelDetail = nil :: string?,

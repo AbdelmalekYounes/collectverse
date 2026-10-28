@@ -6,6 +6,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local Dev = ServerScriptService.Server.Dev
 local KeyframeBuilder = require(Dev.KeyframeBuilder)
+local PerfScenario = require(ReplicatedStorage.Shared.Util.PerfScenario)
 
 local function quaternion(cf: CFrame): { number }
 	local axis, angle = cf:ToAxisAngle()
@@ -113,7 +114,11 @@ return function(test, expect)
 			return
 		end
 		local copy = kael:Clone()
-		local folder = Dev.AnimationData.F001_Kael
+		-- Places de test de performance B et C : le modèle est Kael Anime Fantasy.
+		local scenario = PerfScenario.get()
+		local folder = if scenario and scenario.afAnimations
+			then Dev.AnimationData.F001_Kael_AF
+			else Dev.AnimationData.F001_Kael
 		local count = 0
 		for _, module in folder:GetChildren() do
 			count += 1

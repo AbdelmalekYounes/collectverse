@@ -1,0 +1,48 @@
+{
+  "name": "CollectversePerfC",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "../src/shared"
+      },
+      "Assets": {
+        "$path": "assets/C"
+      },
+      "PerfTest": {
+        "$className": "Folder",
+        "Scenario": {
+          "$path": "scenarios/C.luau"
+        },
+        "AnimationIds": {
+          "$path": "af_animation_ids.json"
+        },
+        "TestPlace": {
+          "$path": "test_place.json"
+        }
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "../src/server"
+      },
+      "Tests": {
+        "$path": "../tests"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "../src/client"
+        }
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "GlobalShadows": false,
+        "LightingStyle": "Soft",
+        "PrioritizeLightingQuality": false
+      }
+    }
+  }
+}

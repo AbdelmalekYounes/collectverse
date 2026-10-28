@@ -6,6 +6,8 @@
 --   local AP = require(game.ServerScriptService.Server.Dev.AnimationPublishing)
 --   -- 1. Construire les 7 séquences (ServerStorage.AnimationSources.<nom>) :
 --   print(AP.describe(AP.prepare(modele, dossierDeDonnees, "F001_Kael_AF")))
+--   -- 2. Contrôler les sources avant de les publier :
+--   print(AP.describe(AP.inspect("F001_Kael_AF", dossierDeDonnees)))
 --   -- 3. Après publication, vérifier chaque identifiant contre ses données :
 --   print(AP.describe(AP.check({ Idle = "rbxassetid://…", … }, dossierDeDonnees)))
 --
@@ -68,9 +70,68 @@ function AnimationPublishing.prepare(model: Model, dataFolder: Instance, name: s
 	return lines
 end
 
--- Recharge chaque animation publiée et la compare à ses données (nombre d'images,
--- boucle, priorité). Un identifiant faux, privé d'un autre compte ou en cours de
--- modération échoue ici.
+-- Compare une KeyframeSequence à ses données : nombre d'images, instants, boucle,
+-- priorité et nombre de poses par image (un os oublié se verrait ici).
+local function compare(sequence: KeyframeSequence, expected): (boolean, string)
+	local keyframes = sequence:GetKeyframes()
+	table.sort(keyframes, function(a, b)
+		return (a :: Keyframe).Time < (b :: Keyframe).Time
+	end)
+	local timesMatch, posesMatch = #keyframes == #expected.frames, true
+	for index, keyframe in keyframes do
+		local frame = expected.frames[index]
+		if not frame or math.abs((keyframe :: Keyframe).Time - frame.time) > 1e-3 then
+			timesMatch = false
+		end
+		local poses = 0
+		for _, descendant in keyframe:GetDescendants() do
+			if descendant:IsA("Pose") then
+				poses += 1
+			end
+		end
+		if poses ~= #expected.bones then
+			posesMatch = false
+		end
+	end
+	local priority = sequence.Priority.Name
+	local expectedPriority = if expected.priority == "Idle" or expected.priority == "Movement"
+		then expected.priority
+		else "Action"
+	local same = timesMatch and posesMatch and sequence.Loop == expected.loop and priority == expectedPriority
+	return same,
+		string.format(
+			"%d images (attendu %d), instants %s, poses %s, boucle %s (%s), priorité %s (%s)",
+			#keyframes,
+			#expected.frames,
+			if timesMatch then "OK" else "différents",
+			if posesMatch then string.format("%d par image", #expected.bones) else "incomplètes",
+			tostring(sequence.Loop),
+			tostring(expected.loop),
+			priority,
+			expectedPriority
+		)
+end
+
+-- Contrôle des sources préparées (ServerStorage.AnimationSources.<nom>) avant leur
+-- publication : chaque séquence <nom>_<Animation> existe et correspond à ses données.
+function AnimationPublishing.inspect(name: string, dataFolder: Instance): { Line }
+	local root = ServerStorage:FindFirstChild("AnimationSources")
+	local folder = root and root:FindFirstChild(name)
+	local lines = {}
+	for kind, expected in dataOf(dataFolder) do
+		local sequence = folder and folder:FindFirstChild(name .. "_" .. kind)
+		if not (sequence and sequence:IsA("KeyframeSequence")) then
+			table.insert(lines, { kind = kind, ok = false, detail = "séquence source absente" })
+		else
+			local ok, detail = compare(sequence, expected)
+			table.insert(lines, { kind = kind, ok = ok, detail = sequence.Name .. " : " .. detail })
+		end
+	end
+	return lines
+end
+
+-- Recharge chaque animation publiée et la compare à ses données. Un identifiant faux,
+-- privé d'un autre compte ou en cours de modération échoue ici.
 function AnimationPublishing.check(ids: { [string]: string }, dataFolder: Instance): { Line }
 	local lines = {}
 	local data = dataOf(dataFolder)
@@ -87,26 +148,8 @@ function AnimationPublishing.check(ids: { [string]: string }, dataFolder: Instan
 			table.insert(lines, { kind = kind, ok = false, detail = "chargement impossible : " .. tostring(sequence) })
 			continue
 		end
-		local frames = #sequence:GetKeyframes()
-		local priority = sequence.Priority.Name
-		local expectedPriority = if expected.priority == "Idle" or expected.priority == "Movement"
-			then expected.priority
-			else "Action"
-		local same = frames == #expected.frames and sequence.Loop == expected.loop and priority == expectedPriority
-		table.insert(lines, {
-			kind = kind,
-			ok = same,
-			detail = string.format(
-				"%s : %d images (attendu %d), boucle %s (%s), priorité %s (%s)",
-				id,
-				frames,
-				#expected.frames,
-				tostring(sequence.Loop),
-				tostring(expected.loop),
-				priority,
-				expectedPriority
-			),
-		})
+		local same, detail = compare(sequence, expected)
+		table.insert(lines, { kind = kind, ok = same, detail = id .. " : " .. detail })
 	end
 	return lines
 end

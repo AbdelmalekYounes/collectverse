@@ -27,6 +27,7 @@
 
 local Freeze = require(script.Parent.Parent.Util.Freeze)
 local CardStyle = require(script.Parent.CardStyle)
+local PerfScenario = require(script.Parent.Parent.Util.PerfScenario)
 
 local VisualAssets = {}
 
@@ -69,6 +70,14 @@ local Cards: { [string]: any } = {
 		},
 	},
 }
+
+-- Test privé de performance (branche test/kael-af-perf, places perf/<B|C>) : Kael
+-- Anime Fantasy joue ses propres animations, ou aucune tant qu'elles ne sont pas
+-- publiées (mouvements génériques) : jamais les animations V0.2.3 de l'ancien squelette.
+local scenario = PerfScenario.get()
+if scenario and scenario.afAnimations then
+	Cards.F001.animations = scenario.animations
+end
 
 VisualAssets.Cards = Freeze.deep(Cards)
 

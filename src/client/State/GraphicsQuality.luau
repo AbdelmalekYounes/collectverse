@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local EffectsPolicy = require(ReplicatedStorage.Shared.Visuals.EffectsPolicy)
 local GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 local TestEnvironment = require(ReplicatedStorage.Shared.Util.TestEnvironment)
+local PerfScenario = require(ReplicatedStorage.Shared.Util.PerfScenario)
 local ClientSettings = require(script.Parent.ClientSettings)
 
 local GraphicsQuality = {}
@@ -32,7 +33,10 @@ end
 -- Détail des modèles 3D ("High" ou "Low") : celui du budget d'effets, sauf réglage
 -- imposé pour une mesure (GameConfig.Debug.ForceModelDetail, environnement de test).
 function GraphicsQuality.modelDetail(): string
-	local forced = GameConfig.Debug.ForceModelDetail
+	local scenario = PerfScenario.get()
+	local forced = if scenario and scenario.forceModelDetail
+		then scenario.forceModelDetail
+		else GameConfig.Debug.ForceModelDetail
 	if (forced == "High" or forced == "Low") and TestEnvironment.isActive(GameConfig.Debug) then
 		return forced
 	end
