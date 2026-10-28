@@ -4,7 +4,7 @@
 local Freeze = require(script.Parent.Parent.Util.Freeze)
 
 local GameConfig = {
-	Version = "0.6.3-art",
+	Version = "0.6.4-af",
 
 	Team = {
 		Size = 5,
@@ -62,9 +62,14 @@ local GameConfig = {
 
 	Debug = {
 		RunTestsInStudio = true,
-		-- Sonde de performance des combats (Controllers/PerfProbe) : à activer seulement
-		-- dans une copie de test, pour mesurer sur un vrai téléphone.
+		-- Outils de test (Util/TestEnvironment) : actifs seulement dans Studio ou dans une
+		-- place dont le PlaceId est listé ici, jamais dans l'expérience publique.
+		TestPlaceIds = {},
+		-- Sonde de performance des combats (Controllers/PerfProbe), par phase.
 		PerfProbe = false,
+		-- Détail des modèles 3D imposé pour une mesure ("High" ou "Low"), sinon celui
+		-- du budget d'effets. Ignoré hors environnement de test.
+		ForceModelDetail = nil :: string?,
 	},
 }
 

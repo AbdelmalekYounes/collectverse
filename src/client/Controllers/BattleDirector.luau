@@ -33,6 +33,8 @@ local BattleDirector = {}
 
 -- (active: boolean) : entrée et sortie du mode combat
 BattleDirector.ModeChanged = Signal.new()
+-- (phase: string) : Summoning, Planning, Resolving, Finished, puis Idle à la sortie
+BattleDirector.PhaseChanged = Signal.new()
 -- (choice: "replay" | "hub") : choix du joueur sur l'écran de résultat
 BattleDirector.ExitRequested = Signal.new()
 
@@ -77,6 +79,7 @@ end
 local function setPhase(newPhase: string)
 	phase = newPhase
 	hud.setPhase(newPhase)
+	BattleDirector.PhaseChanged:Fire(newPhase)
 end
 
 local function refresh()
@@ -345,6 +348,7 @@ function BattleDirector.exit(choice: string)
 	end
 	active = false
 	phase = "Idle"
+	BattleDirector.PhaseChanged:Fire("Idle")
 	SummonController.requestSkip()
 	if viewportConnection then
 		viewportConnection:Disconnect()

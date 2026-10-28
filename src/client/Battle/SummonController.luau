@@ -251,7 +251,7 @@ export type Options = { mode: Mode, tint: Color3?, assetsFolder: Instance? }
 function SummonController.summon(unit, footCFrame: CFrame, parent: Instance, options: Options): Model
 	local model = ModelFactory.build(
 		unit.fighterId,
-		{ assetsFolder = options.assetsFolder, detail = GraphicsQuality.budget().modelDetail }
+		{ assetsFolder = options.assetsFolder, detail = GraphicsQuality.modelDetail() }
 	)
 	GraphicsQuality.applyToModel(model)
 	model.Name = unit.uid

@@ -256,6 +256,8 @@ Les passes 1 et 2 ne serviront plus : vous pouvez les archiver depuis le Creator
 
 ## 6. Remplacement de la production : procédure prête, non exécutée
 
+> **Version détaillée et à jour** (outil `Dev/AnimationPublishing`, commandes exactes, place de test, retour arrière) : [KAEL_ANIME_FANTASY_PREVALIDATION.md](KAEL_ANIME_FANTASY_PREVALIDATION.md), § 5. La sonde de performance y est aussi mesurée par phase (§ 1).
+
 À faire **seulement après votre autorisation explicite**, dans cet ordre :
 
 1. **Publier les 7 animations** (Studio, place de test) :

@@ -17,6 +17,15 @@ export type Summary = {
 
 local SLOW_MS = 1000 / 30
 
+-- Phases du combat mesurées (BattleDirector), dans l'ordre du rapport. « Finished »
+-- (écran de résultat) et « Idle » ne sont jamais mesurées : lire le résultat n'est
+-- pas une performance du combat.
+FrameStats.MeasuredPhases = table.freeze({ "Summoning", "Planning", "Resolving" })
+local MEASURED = {}
+for _, phase in FrameStats.MeasuredPhases do
+	MEASURED[phase] = true
+end
+
 local function percentile(sorted: { number }, p: number): number
 	if #sorted == 0 then
 		return 0
@@ -64,6 +73,67 @@ function FrameStats.describe(summary: Summary): string
 		summary.maxMs,
 		summary.slowShare * 100
 	)
+end
+
+export type Recorder = {
+	phase: string,
+	samples: { [string]: { number } },
+	maxSamples: number,
+	memoryPeakMb: number,
+}
+
+-- Enregistreur par phase. maxSamples borne la mémoire par phase (10 min à 60 i/s).
+function FrameStats.newRecorder(maxSamples: number?): Recorder
+	local samples = {}
+	for _, phase in FrameStats.MeasuredPhases do
+		samples[phase] = {}
+	end
+	return { phase = "Idle", samples = samples, maxSamples = maxSamples or 36000, memoryPeakMb = 0 }
+end
+
+function FrameStats.setPhase(recorder: Recorder, phase: string)
+	recorder.phase = phase
+end
+
+-- Image de durée `ms` : comptée dans la phase en cours si elle est mesurée.
+function FrameStats.record(recorder: Recorder, ms: number)
+	local bucket = MEASURED[recorder.phase] and recorder.samples[recorder.phase]
+	if bucket and #bucket < recorder.maxSamples then
+		table.insert(bucket, ms)
+	end
+end
+
+function FrameStats.recordMemory(recorder: Recorder, megabytes: number)
+	recorder.memoryPeakMb = math.max(recorder.memoryPeakMb, megabytes)
+end
+
+export type Report = {
+	phases: { [string]: Summary },
+	combat: Summary, -- invocations + planification + résolution (hors écran de résultat)
+	memoryPeakMb: number,
+}
+
+function FrameStats.report(recorder: Recorder): Report
+	local phases, all = {}, {}
+	for _, phase in FrameStats.MeasuredPhases do
+		local samples = recorder.samples[phase]
+		phases[phase] = FrameStats.summarize(samples)
+		table.move(samples, 1, #samples, #all + 1, all)
+	end
+	return { phases = phases, combat = FrameStats.summarize(all), memoryPeakMb = recorder.memoryPeakMb }
+end
+
+-- Lignes lisibles du rapport (console et capture d'écran).
+function FrameStats.describeReport(report: Report): { string }
+	local lines = { "combat (hors résultat) : " .. FrameStats.describe(report.combat) }
+	for _, phase in FrameStats.MeasuredPhases do
+		local summary = report.phases[phase]
+		if summary.frames > 0 then
+			table.insert(lines, phase .. " : " .. FrameStats.describe(summary))
+		end
+	end
+	table.insert(lines, string.format("mémoire max %.0f Mo", report.memoryPeakMb))
+	return lines
 end
 
 return FrameStats
