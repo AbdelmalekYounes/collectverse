@@ -1,0 +1,38 @@
+{
+  "production_6.6": {
+    "pc": {
+      "overlaps": [],
+      "allOnScreen": true,
+      "topPlateY": 133.0
+    },
+    "mobile": {
+      "overlaps": [],
+      "allOnScreen": true,
+      "topPlateY": 47.4
+    }
+  },
+  "anime_fantasy_7.27": {
+    "pc": {
+      "overlaps": [],
+      "allOnScreen": true,
+      "topPlateY": 114.5
+    },
+    "mobile": {
+      "overlaps": [],
+      "allOnScreen": true,
+      "topPlateY": 40.7
+    }
+  },
+  "studio_extents_7.38": {
+    "pc": {
+      "overlaps": [],
+      "allOnScreen": true,
+      "topPlateY": 111.5
+    },
+    "mobile": {
+      "overlaps": [],
+      "allOnScreen": true,
+      "topPlateY": 39.6
+    }
+  }
+}

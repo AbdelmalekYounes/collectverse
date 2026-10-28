@@ -27,14 +27,18 @@ function GraphicsQuality.budget()
 	return EffectsPolicy.budget(GraphicsQuality.level())
 end
 
--- Éteint les lumières dynamiques d'un modèle si le budget l'exige.
+-- Éteint les lumières dynamiques et les particules permanentes d'un modèle si le
+-- budget l'exige.
 function GraphicsQuality.applyToModel(model: Instance)
-	if GraphicsQuality.budget().dynamicLights then
+	local budget = GraphicsQuality.budget()
+	if budget.dynamicLights and budget.modelParticles then
 		return
 	end
 	for _, descendant in model:GetDescendants() do
-		if descendant:IsA("Light") then
-			descendant.Enabled = false
+		local light = descendant:IsA("Light") and not budget.dynamicLights
+		local particles = descendant:IsA("ParticleEmitter") and not budget.modelParticles
+		if light or particles then
+			(descendant :: any).Enabled = false
 		end
 	end
 end

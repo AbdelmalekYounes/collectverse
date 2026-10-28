@@ -1,0 +1,243 @@
+{
+  "blender": "4.2.23 LTS",
+  "model": "F001_Kael_AF",
+  "height": 7.236,
+  "crown": 6.9,
+  "headsTall": 7.26,
+  "width": 3.543,
+  "minZ": 0.041,
+  "vertices": 7113,
+  "triangles": 13540,
+  "bones": [
+    "Root",
+    "HumanoidRootPart",
+    "LowerTorso",
+    "UpperTorso",
+    "Head",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot"
+  ],
+  "boneCount": 17,
+  "sameBoneNamesAndHierarchy": true,
+  "restPositionsChanged": true,
+  "maxInfluencesPerVertex": 4,
+  "unweightedVertices": 0,
+  "materials": 1,
+  "uvLayers": [
+    "AtlasUV"
+  ],
+  "textureSize": 1024,
+  "animations": {
+    "Idle": {
+      "frames": 60,
+      "fps": 30
+    },
+    "Attack": {
+      "frames": 24,
+      "fps": 30
+    },
+    "Skill": {
+      "frames": 36,
+      "fps": 30
+    },
+    "Ultimate": {
+      "frames": 60,
+      "fps": 30
+    },
+    "Defend": {
+      "frames": 20,
+      "fps": 30
+    },
+    "Hit": {
+      "frames": 14,
+      "fps": 30
+    },
+    "Defeat": {
+      "frames": 40,
+      "fps": 30
+    }
+  },
+  "groundCheck": {
+    "Idle": {
+      "frames": [
+        1,
+        31,
+        61
+      ],
+      "lowestZ": [
+        0.041,
+        -0.0,
+        0.041
+      ],
+      "swordAndHandsLowestZ": [
+        1.547,
+        1.627,
+        1.547
+      ]
+    },
+    "Attack": {
+      "frames": [
+        1,
+        8,
+        13,
+        25
+      ],
+      "lowestZ": [
+        0.041,
+        0.041,
+        0.041,
+        0.041
+      ],
+      "swordAndHandsLowestZ": [
+        1.547,
+        3.062,
+        2.999,
+        1.547
+      ]
+    },
+    "Skill": {
+      "frames": [
+        1,
+        9,
+        21,
+        31,
+        37
+      ],
+      "lowestZ": [
+        0.041,
+        0.041,
+        0.414,
+        0.041,
+        0.041
+      ],
+      "swordAndHandsLowestZ": [
+        1.547,
+        4.598,
+        4.971,
+        3.882,
+        1.547
+      ]
+    },
+    "Ultimate": {
+      "frames": [
+        1,
+        13,
+        27,
+        39,
+        61
+      ],
+      "lowestZ": [
+        0.041,
+        0.0,
+        2.534,
+        0.0,
+        0.041
+      ],
+      "swordAndHandsLowestZ": [
+        1.547,
+        2.265,
+        9.64,
+        0.502,
+        1.547
+      ]
+    },
+    "Defend": {
+      "frames": [
+        1,
+        9,
+        21
+      ],
+      "lowestZ": [
+        0.041,
+        0.0,
+        0.0
+      ],
+      "swordAndHandsLowestZ": [
+        1.547,
+        4.741,
+        4.741
+      ]
+    },
+    "Hit": {
+      "frames": [
+        1,
+        5,
+        15
+      ],
+      "lowestZ": [
+        0.041,
+        0.041,
+        0.041
+      ],
+      "swordAndHandsLowestZ": [
+        1.547,
+        3.647,
+        1.547
+      ]
+    },
+    "Defeat": {
+      "frames": [
+        1,
+        15,
+        41
+      ],
+      "lowestZ": [
+        0.041,
+        -0.0,
+        -0.0
+      ],
+      "swordAndHandsLowestZ": [
+        1.547,
+        -0.332,
+        1.226
+      ]
+    }
+  },
+  "lowestPointAllKeys": -0.0,
+  "checks": {
+    "trianglesMain": true,
+    "bones": true,
+    "sameBoneNamesAndHierarchy": true,
+    "influences": true,
+    "allVerticesWeighted": true,
+    "oneMaterial": true,
+    "feetOnGround": true,
+    "heightNear7": true,
+    "noGroundPenetration": true
+  },
+  "valid": true,
+  "groundFix": {
+    "Idle": {
+      "31": 0.022
+    },
+    "Ultimate": {
+      "13": 0.401,
+      "39": 0.307
+    },
+    "Defend": {
+      "9": 0.314,
+      "21": 0.314
+    },
+    "Defeat": {
+      "15": 0.694,
+      "41": 0.881
+    }
+  },
+  "files": {
+    "modelFbx": "F001_Kael_AF.fbx",
+    "modelGlb": "F001_Kael_AF.glb",
+    "lodTriangles": 5199,
+    "lodFbx": "F001_Kael_AF_LOD.fbx",
+    "blend": "F001_Kael_AF.blend"
+  }
+}

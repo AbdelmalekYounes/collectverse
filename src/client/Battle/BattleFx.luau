@@ -79,6 +79,8 @@ function BattleFx.flash(model: Model, color: Color3, speed: number)
 	local baseFill = highlight:GetAttribute("BaseFillTransparency") or 1
 	local baseOutline = highlight:GetAttribute("BaseOutlineTransparency") or 1
 	local baseColor = highlight:GetAttribute("BaseColor") or color
+	-- Le contour peut avoir sa propre couleur (contour chaud des alliés).
+	local baseOutlineColor = highlight:GetAttribute("BaseOutlineColor") or baseColor
 	highlight.FillColor = color
 	highlight.OutlineColor = color
 	highlight.FillTransparency = 0.25
@@ -86,7 +88,7 @@ function BattleFx.flash(model: Model, color: Color3, speed: number)
 	local fade = tween(highlight, 0.35 / speed, { FillTransparency = baseFill, OutlineTransparency = baseOutline })
 	fade.Completed:Once(function()
 		highlight.FillColor = baseColor
-		highlight.OutlineColor = baseColor
+		highlight.OutlineColor = baseOutlineColor
 	end)
 end
 

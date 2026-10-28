@@ -9,6 +9,8 @@ Dossier de travail distinct du code du jeu (`src/`). Rien ici n'est chargé par 
 | `contact_sheet.py` | Planche de contrôle (vues et poses) à partir des rendus. |
 | `kael_anim_export.py` | Export des animations en images-clés pour Roblox (V0.2.3), à partir du `.blend`, sans le modifier. Voir `docs/V023_ANIMATION_PIPELINE.md`. |
 | `build/` | Résultats de la dernière production, versionnés pour pouvoir être relus sans Blender. |
+| `anime_fantasy/` | Nouveau modèle Anime Fantasy (V0.2.5), production indépendante. Voir `anime_fantasy/README.md` et `docs/KAEL_ANIME_FANTASY_PRODUCTION.md`. |
+| `premium/` | Passe artistique premium (V0.2.4), sur une **copie** : même rig et mêmes animations, habillage refait. Voir `premium/README.md` et `docs/V024_KAEL_ART_PASS.md`. |
 
 ## Produire
 

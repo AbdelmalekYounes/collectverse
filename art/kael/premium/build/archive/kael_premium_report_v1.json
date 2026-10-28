@@ -1,0 +1,124 @@
+{
+  "blender": "4.2.23 LTS",
+  "model": "F001_Kael_Premium",
+  "height": 6.747,
+  "minZ": 0.0,
+  "width": 3.334,
+  "depth": 3.037,
+  "vertices": 3145,
+  "triangles": 5858,
+  "trianglesByPart": {
+    "hair": 956,
+    "armor": 788,
+    "pauldrons": 688,
+    "arms": 608,
+    "face": 468,
+    "boots": 432,
+    "sword": 402,
+    "head": 348,
+    "cape": 304,
+    "ember": 292,
+    "torso": 196,
+    "legs": 160,
+    "belt": 156,
+    "cloth": 60
+  },
+  "bones": [
+    "Root",
+    "HumanoidRootPart",
+    "LowerTorso",
+    "UpperTorso",
+    "Head",
+    "LeftUpperArm",
+    "LeftLowerArm",
+    "LeftHand",
+    "RightUpperArm",
+    "RightLowerArm",
+    "RightHand",
+    "LeftUpperLeg",
+    "LeftLowerLeg",
+    "LeftFoot",
+    "RightUpperLeg",
+    "RightLowerLeg",
+    "RightFoot"
+  ],
+  "boneCount": 17,
+  "sameRigAsProduction": true,
+  "maxInfluencesPerVertex": 3,
+  "unweightedVertices": 0,
+  "materials": 1,
+  "texture": "F001_Kael_Premium_Palette.png",
+  "textureSize": 128,
+  "swatches": 22,
+  "animations": {
+    "Idle": {
+      "frames": 60,
+      "fps": 30,
+      "loop": true
+    },
+    "Attack": {
+      "frames": 24,
+      "fps": 30,
+      "loop": false
+    },
+    "Skill": {
+      "frames": 36,
+      "fps": 30,
+      "loop": false
+    },
+    "Ultimate": {
+      "frames": 60,
+      "fps": 30,
+      "loop": false
+    },
+    "Defend": {
+      "frames": 20,
+      "fps": 30,
+      "loop": false
+    },
+    "Hit": {
+      "frames": 14,
+      "fps": 30,
+      "loop": false
+    },
+    "Defeat": {
+      "frames": 40,
+      "fps": 30,
+      "loop": false
+    }
+  },
+  "budget": {
+    "maxTriangles": 6000,
+    "maxBones": 20,
+    "maxInfluences": 4,
+    "textureSize": 128
+  },
+  "checks": {
+    "triangles": true,
+    "bones": true,
+    "sameRigAsProduction": true,
+    "influences": true,
+    "allVerticesWeighted": true,
+    "feetOnGround": true,
+    "height": true
+  },
+  "valid": true,
+  "files": {
+    "modelFbx": "F001_Kael_Premium.fbx",
+    "modelGlb": "F001_Kael_Premium.glb",
+    "blend": "F001_Kael_Premium.blend"
+  },
+  "renders": [
+    "renders/kael_front.png",
+    "renders/kael_three_quarter.png",
+    "renders/kael_side.png",
+    "renders/kael_back.png",
+    "renders/kael_pose_Idle.png",
+    "renders/kael_pose_Attack.png",
+    "renders/kael_pose_Skill.png",
+    "renders/kael_pose_Ultimate.png",
+    "renders/kael_pose_Defend.png",
+    "renders/kael_pose_Hit.png",
+    "renders/kael_pose_Defeat.png"
+  ]
+}

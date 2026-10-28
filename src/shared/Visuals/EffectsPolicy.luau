@@ -15,12 +15,19 @@ EffectsPolicy.LowQualityMax = 3
 EffectsPolicy.Budgets = Freeze.deep({
 	Full = {
 		summonParticles = 30, -- particules de l'anneau d'invocation
-		dynamicLights = true, -- PointLight des cartes, modèles et de l'arène
+		dynamicLights = true, -- PointLight des cartes et des modèles
+		-- Lumière d'ambiance de l'arène (une seule PointLight, sans ombre) : gardée même
+		-- en effets réduits, sinon les combattants texturés deviennent presque noirs de
+		-- dos et les braises de la cape de Kael disparaissent (validé dans Studio, V0.2.5).
+		arenaLight = true,
+		modelParticles = true, -- particules permanentes portées par un modèle (braises de Kael)
 		rarityBurst = true, -- éclat derrière les cartes rares à l'ouverture
 	},
 	Reduced = {
 		summonParticles = 8,
 		dynamicLights = false,
+		arenaLight = true,
+		modelParticles = false,
 		rarityBurst = false,
 	},
 })

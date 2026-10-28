@@ -143,7 +143,7 @@ function Arena.build(): Folder
 	light.Color = Theme.Colors.Violet
 	light.Brightness = 1.5
 	light.Range = 45
-	light.Enabled = GraphicsQuality.budget().dynamicLights
+	light.Enabled = GraphicsQuality.budget().arenaLight
 	light.Parent = glow
 
 	root.Parent = Workspace

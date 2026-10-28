@@ -6,6 +6,8 @@ Prototype Roblox (V0.1) : collection de cartes, boosters gratuits et combats str
 >
 > - Récapitulatif des livrables (modules, tests et résultats, vérifications manuelles, limitations) : [docs/LIVRABLES.md](docs/LIVRABLES.md).
 > - **Audit et stabilisation (version 0.5.1-audit)** : verrou de session des sauvegardes, combats adaptés à l'écran, architecture visuelle V0.2. Voir [docs/AUDIT_V01.md](docs/AUDIT_V01.md).
+> - **V0.2.5 — Kael Anime Fantasy (en production, non intégré)** : nouveau modèle 3D complet (≈ 7,3 têtes, armure, épée des braises, cape, atlas cuit, 7 animations reconstruites), prêt pour un import de test. Voir [docs/KAEL_ANIME_FANTASY_PRODUCTION.md](docs/KAEL_ANIME_FANTASY_PRODUCTION.md).
+> - **V0.2.4 — passe artistique premium de Kael (version 0.6.3-art)** : animations revalidées en combat réel, modèle premium sur une copie (même rig, mêmes animations), rendus avant / après, proposition d'illustration de carte, effets de braise. Voir [docs/V024_KAEL_ART_PASS.md](docs/V024_KAEL_ART_PASS.md).
 > - **V0.2.3 — animations 3D (version 0.6.2-anim)** : les 7 animations de Kael converties de Blender en KeyframeSequence, validées, publiées et jouées en combat. Voir [docs/V023_ANIMATION_PIPELINE.md](docs/V023_ANIMATION_PIPELINE.md).
 > - **V0.2.2 — premier personnage 3D (version 0.6.1-kael)** : pipeline Blender → Roblox de Kael (modèle riggé, rendus, import, contrat, versionnement). Voir [docs/V022_KAEL_PIPELINE.md](docs/V022_KAEL_PIPELINE.md).
 > - **V0.2.1 — fondations visuelles (version 0.6.0-visual)** : cartes premium (cadres par rareté, variantes, holo), ouverture de booster retravaillée, personnage pilote Kael et pipeline Blender → Roblox. Voir [docs/V02_VISUAL_PIPELINE.md](docs/V02_VISUAL_PIPELINE.md).

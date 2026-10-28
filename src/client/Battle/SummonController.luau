@@ -220,18 +220,27 @@ local function hideModel(model: Model)
 	return parts, lights
 end
 
+-- Contour des alliés (sans teinte) : liseré chaud, fin et peu opaque, qui détache
+-- la silhouette du sol, surtout de dos, sur mobile et en effets réduits (validé
+-- dans Studio, V0.2.5). Pas de remplissage, pas de contour blanc épais.
+SummonController.AllyOutline = table.freeze({
+	color = Color3.fromHex("#FFE3B8"),
+	transparency = 0.6,
+})
+
 local function addHighlight(model: Model, tint: Color3?)
 	-- Un seul Highlight par modèle : BattleFx l'utilise aussi pour les impacts.
 	local highlight = Instance.new("Highlight")
 	highlight.Name = "FxHighlight"
 	highlight.DepthMode = Enum.HighlightDepthMode.Occluded
 	highlight.FillColor = tint or Color3.new(1, 1, 1)
-	highlight.OutlineColor = tint or Color3.new(1, 1, 1)
+	highlight.OutlineColor = tint or SummonController.AllyOutline.color
 	highlight.FillTransparency = if tint then 0.85 else 1
-	highlight.OutlineTransparency = if tint then 0.35 else 1
+	highlight.OutlineTransparency = if tint then 0.35 else SummonController.AllyOutline.transparency
 	highlight:SetAttribute("BaseFillTransparency", highlight.FillTransparency)
 	highlight:SetAttribute("BaseOutlineTransparency", highlight.OutlineTransparency)
 	highlight:SetAttribute("BaseColor", highlight.FillColor)
+	highlight:SetAttribute("BaseOutlineColor", highlight.OutlineColor)
 	highlight.Parent = model
 end
 

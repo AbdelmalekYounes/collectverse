@@ -18,3 +18,12 @@ Thumbs.db
 # Blender : sauvegardes automatiques et copies de textures des exports FBX
 *.blend1
 *.fbm/
+
+# Passe premium de Kael : rendus de chaque image-clé (régénérables, résumés dans sheets/poses_after.png)
+art/kael/premium/build/lookdev/*_poses/
+
+# Kael Anime Fantasy : rendus de chaque image-clé (régénérables, résumés dans build/sheets/poses.png)
+art/kael/anime_fantasy/build/renders/*_poses/
+
+# Textures extraites par l'importateur 3D de Studio
+art/kael/anime_fantasy/build/**/*.fbm/

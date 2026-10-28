@@ -47,6 +47,24 @@ return function(test, expect)
 		end)
 	end)
 
+	test("allié : contour chaud fin et peu opaque, sans remplissage", function()
+		withFolder(function(folder)
+			local model = SummonController.summon(UNIT, Arena.slotCFrame("Ally", 2), folder, { mode = "instant" })
+			local highlight = model:FindFirstChild("FxHighlight") :: Highlight
+			local outline = SummonController.AllyOutline
+			expect.equal(highlight.FillTransparency, 1, "pas de remplissage")
+			expect.near(highlight.OutlineTransparency, outline.transparency, 1e-6, "contour peu opaque")
+			expect.truthy(outline.transparency >= 0.5, "jamais un contour plein")
+			expect.equal(highlight.OutlineColor:ToHex(), outline.color:ToHex(), "couleur du contour")
+			expect.equal(
+				highlight:GetAttribute("BaseOutlineColor"),
+				highlight.OutlineColor,
+				"couleur restaurée après un impact"
+			)
+			expect.equal(highlight.DepthMode, Enum.HighlightDepthMode.Occluded, "masqué derrière les autres modèles")
+		end)
+	end)
+
 	test("invocation complète (réduite) : carte nettoyée, modèle entièrement visible", function()
 		withFolder(function(folder)
 			local target = Arena.slotCFrame("Ally", 2)

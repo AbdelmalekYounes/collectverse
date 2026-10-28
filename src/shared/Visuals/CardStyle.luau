@@ -94,7 +94,7 @@ CardStyle.Variants = Freeze.deep({
 -- Classes de taille, selon la largeur réelle de la vignette (pixels logiques).
 -- Compact : vignettes d'équipe ; Standard : grilles ; Large : fiche, révélation.
 CardStyle.SizeClasses = Freeze.deep({
-	Compact = { maxWidth = 105, showSubtitle = true, showRarityLabel = false, nameMax = 13, captionMax = 10 },
+	Compact = { maxWidth = 105, showSubtitle = true, showRarityLabel = false, nameMax = 15, captionMax = 11 },
 	Standard = { maxWidth = 150, showSubtitle = true, showRarityLabel = true, nameMax = 15, captionMax = 11 },
 	Large = { maxWidth = math.huge, showSubtitle = true, showRarityLabel = true, nameMax = 24, captionMax = 15 },
 })
@@ -103,15 +103,50 @@ CardStyle.SizeOrder = Freeze.deep({ "Compact", "Standard", "Large" })
 -- Rapport largeur / hauteur de toutes les cartes.
 CardStyle.AspectRatio = 112 / 158
 
--- Mise en page proportionnelle (fractions de la carte) : identique à toutes les
--- tailles, seules les tailles de texte maximales changent avec la classe.
+-- Mise en page proportionnelle (fractions de la carte). Standard et Large ont la
+-- même ; Compact (vignettes d'équipe, mobile) agrandit l'illustration et le nom, et
+-- n'affiche que l'élément en sous-titre : le libellé de rareté y est masqué, la
+-- rareté reste lisible par le cadre et les gemmes.
 CardStyle.Layout = Freeze.deep({
 	art = { x = 0.07, y = 0.05, width = 0.86, height = 0.55 },
-	gems = { y = 0.6, height = 0.075 }, -- à cheval sur le bas de l'illustration
+	gems = { y = 0.6, height = 0.075 }, -- centre à cheval sur le bas de l'illustration
 	name = { y = 0.655, height = 0.1 },
 	subtitle = { y = 0.755, height = 0.075 },
 	footer = { y = 0.855, height = 0.08 },
 })
+CardStyle.CompactLayout = Freeze.deep({
+	art = { x = 0.06, y = 0.045, width = 0.88, height = 0.6 },
+	gems = { y = 0.645, height = 0.07 },
+	name = { y = 0.69, height = 0.15 },
+	subtitle = { y = 0.84, height = 0.1 },
+	footer = { y = 0.94, height = 0.05 },
+})
+
+function CardStyle.layout(sizeClass: string?)
+	return if sizeClass == "Compact" then CardStyle.CompactLayout else CardStyle.Layout
+end
+
+-- Pastille de finition (Holo...) : coin haut gauche de l'illustration, en fractions
+-- de la fenêtre d'illustration. Distincte du libellé de rareté (bas de carte) et
+-- éloignée du badge de quantité (coin haut droit de la carte).
+CardStyle.FinishBadge = Freeze.deep({ x = 0.04, y = 0.04, width = 0.42, height = 0.15 })
+
+-- Illustrations : portrait 4:5 (ex. 1024 × 1280), recadrées en ScaleType.Crop
+-- (toute la largeur, bande centrale). Le sujet doit tenir dans la bande centrale
+-- de ArtSafeBand de la hauteur, visible à toutes les tailles de carte.
+CardStyle.ArtSourceAspect = 4 / 5
+CardStyle.ArtSafeBand = 0.7
+
+-- Rapport largeur / hauteur de la fenêtre d'illustration en pixels.
+function CardStyle.artAspect(sizeClass: string?): number
+	local art = CardStyle.layout(sizeClass).art
+	return (art.width * CardStyle.AspectRatio) / art.height
+end
+
+-- Part de la hauteur d'une illustration 4:5 visible dans la fenêtre (Crop).
+function CardStyle.visibleArtHeight(sizeClass: string?): number
+	return math.min(1, CardStyle.ArtSourceAspect / CardStyle.artAspect(sizeClass))
+end
 
 function CardStyle.frame(rarity: string)
 	return CardStyle.Frames[rarity] or CardStyle.Frames.Common

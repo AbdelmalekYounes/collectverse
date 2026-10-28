@@ -13,6 +13,8 @@ Parcours cible : **Lancement → Hub → Collection → Équipe → Combat → V
 | V0.2.1 | Fondations visuelles (0.6.0) : cartes premium, ouverture des boosters, pilote Kael | ✅ Lune 124/124, Studio 137/137 — voir [V02_VISUAL_PIPELINE.md](V02_VISUAL_PIPELINE.md) |
 | V0.2.2 | Premier personnage 3D (0.6.1) : Kael riggé, pipeline Blender → Roblox | ✅ modèle intégré, Studio 141/141 ; animations résolues en V0.2.3 — voir [V022_KAEL_PIPELINE.md](V022_KAEL_PIPELINE.md) |
 | V0.2.3 | Pipeline d'animation (0.6.2) : Blender → KeyframeSequence, 7 animations de Kael | ✅ validées, publiées, jouées en combat ; Studio 146/146 — voir [V023_ANIMATION_PIPELINE.md](V023_ANIMATION_PIPELINE.md) |
+| V0.2.4 | Passe artistique premium de Kael (0.6.3) : copie premium, rendus, illustration proposée, effets de braise | ✅ hors Roblox, retouches v2 faites ; import de la copie en attente de validation ; Lune 128/128, Studio 153/153 — voir [V024_KAEL_ART_PASS.md](V024_KAEL_ART_PASS.md) |
+| V0.2.5 | Kael Anime Fantasy : nouveau modèle 3D complet (prototype de référence des six combattants) | 🔶 modèle, rig et 7 animations validés dans Studio (place de test) ; passe 3 de texture (lame et sous-armure corrigées) ; contour fin des alliés et lumière d'arène en effets réduits appliqués au jeu ; reste avant intégration : bras dans la cape, mesure sur téléphone, publication des animations — voir [KAEL_ANIME_FANTASY_PRODUCTION.md](KAEL_ANIME_FANTASY_PRODUCTION.md) et [KAEL_ANIME_FANTASY_STUDIO_VALIDATION.md](KAEL_ANIME_FANTASY_STUDIO_VALIDATION.md) |
 
 Le récapitulatif final des livrables est dans [LIVRABLES.md](LIVRABLES.md).
 

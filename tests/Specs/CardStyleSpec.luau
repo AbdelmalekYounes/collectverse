@@ -78,17 +78,57 @@ return function(test, expect)
 		expect.truthy(large.nameMax > compact.nameMax, "texte plus grand sur grande carte")
 	end)
 
-	test("la mise en page tient dans la carte, sans chevauchement vertical", function()
-		local layout = CardStyle.Layout
-		expect.truthy(layout.art.x + layout.art.width <= 1, "illustration en largeur")
-		local bottom = 0
-		for _, key in { "name", "subtitle", "footer" } do
-			local zone = layout[key]
-			expect.truthy(zone.y >= bottom - 1e-9, key .. " sous la zone précédente")
-			bottom = zone.y + zone.height
+	test("la mise en page tient dans la carte, sans chevauchement vertical (toutes les tailles)", function()
+		for _, className in CardStyle.SizeOrder do
+			local layout = CardStyle.layout(className)
+			expect.truthy(layout.art.x + layout.art.width <= 1, className .. " : illustration en largeur")
+			-- Gemmes centrées sur le bas de l'illustration, entièrement au-dessus du nom.
+			expect.near(layout.gems.y, layout.art.y + layout.art.height, 1e-9, className .. " : gemmes à cheval")
+			expect.truthy(
+				layout.gems.y + layout.gems.height / 2 <= layout.name.y + 1e-9,
+				className .. " : gemmes au-dessus du nom"
+			)
+			local bottom = 0
+			for _, key in { "name", "subtitle", "footer" } do
+				local zone = layout[key]
+				expect.truthy(zone.y >= bottom - 1e-9, className .. " : " .. key .. " sous la zone précédente")
+				bottom = zone.y + zone.height
+			end
+			expect.truthy(bottom <= 1, className .. " : pied de carte dans la carte")
 		end
-		expect.truthy(bottom <= 1, "pied de carte dans la carte")
-		expect.truthy(layout.name.y >= layout.gems.y, "nom sous les gemmes")
+		expect.equal(CardStyle.layout("Large"), CardStyle.layout("Standard"), "Large reprend Standard")
+	end)
+
+	test("Compact : nom et illustration plus grands que Standard", function()
+		local compact, standard = CardStyle.layout("Compact"), CardStyle.layout("Standard")
+		expect.truthy(compact.name.height > standard.name.height, "nom plus haut")
+		expect.truthy(compact.art.height > standard.art.height, "illustration plus haute")
+		expect.truthy(CardStyle.SizeClasses.Compact.nameMax >= CardStyle.SizeClasses.Standard.nameMax, "texte du nom")
+	end)
+
+	test("recadrage : le sujet d'une illustration 4:5 reste visible à toutes les tailles", function()
+		for _, className in CardStyle.SizeOrder do
+			local visible = CardStyle.visibleArtHeight(className)
+			expect.truthy(
+				visible >= CardStyle.ArtSafeBand,
+				string.format("%s : %.0f %% de la hauteur visible", className, visible * 100)
+			)
+		end
+		expect.near(CardStyle.artAspect("Standard"), (0.86 * 112) / (0.55 * 158), 1e-6, "fenêtre Standard")
+	end)
+
+	test("finition distincte de la rareté : pastille dans l'illustration, loin du badge de quantité", function()
+		local badge = CardStyle.FinishBadge
+		expect.truthy(badge.x + badge.width <= 1 and badge.y + badge.height <= 1, "dans l'illustration")
+		for _, className in CardStyle.SizeOrder do
+			local art = CardStyle.layout(className).art
+			local right = art.x + (badge.x + badge.width) * art.width
+			-- Le badge de quantité occupe le quart droit de la carte (largeur 0.27).
+			expect.truthy(right < 0.7, className .. " : aucun chevauchement avec la quantité")
+		end
+		local holo = CardStyle.resolve("Common", "Holo")
+		expect.equal(holo.rarity, "Common", "la rareté affichée reste Commune")
+		expect.equal(holo.variantLabel, "HOLO", "la finition a son propre libellé")
 	end)
 
 	test("Kael, personnage pilote : variante Holo, sans Asset ID inventé", function()

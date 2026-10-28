@@ -6,10 +6,14 @@
 --    posée au-dessus du visuel de repli (emblème, initiale, dégradé de l'élément),
 --    qui reste visible si l'image manque ou ne se charge pas ;
 --  - gemmes de rareté, nom, élément et rôle, libellé de rareté (lecture redondante) ;
+--  - finition (variante Holo) distincte de la rareté : pastelle irisée « HOLO » dans
+--    le coin de l'illustration, jamais mêlée au libellé de rareté du bas de carte ;
 --  - reflet holographique léger pour les Légendaires et la variante Holo, figé si
 --    « Animations réduites », absent si « Effets réduits ».
 -- Toute la mise en page est proportionnelle : la même carte sert de 100 × 140 à
--- la grande carte de la fiche. API inchangée : create(card, options), setSelected.
+-- la grande carte de la fiche. La classe Compact a sa propre mise en page (nom et
+-- illustration plus grands, élément seul en sous-titre). API inchangée :
+-- create(card, options), setSelected.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -164,15 +168,69 @@ local function foil(tile: GuiObject)
 	TweenService:Create(gradient, info, { Offset = Vector2.new(0.9, 0) }):Play()
 end
 
--- Applique la classe de taille (tailles de texte maximales, libellé de rareté).
+-- Pastille de finition (Holo) : irisée, texte sombre, au-dessus de l'illustration.
+local function finishBadge(art: Frame, label: string)
+	local spec = CardStyle.FinishBadge
+	local badge = new("Frame", {
+		Name = "FinishBadge",
+		Position = UDim2.fromScale(spec.x, spec.y),
+		Size = UDim2.fromScale(spec.width, spec.height),
+		BackgroundColor3 = Theme.Colors.White,
+		ZIndex = 4,
+		Parent = art,
+	}, {
+		Components.corner(Theme.Radius.Pill),
+		Components.stroke(Theme.Colors.White, 1, 0.1),
+		new("UIGradient", { Color = colorSequence({ "#A8F1FF", "#D2C4FF", "#FFE9A8" }), Rotation = 0 }),
+	})
+	local text = scaledLabel(badge, "FinishLabel", {
+		Text = label,
+		FontFace = Theme.Fonts.Bold,
+		TextColor3 = Theme.Colors.Background,
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = 5,
+	})
+	text:SetAttribute("TextRole", "Finish")
+end
+
+-- Place un élément selon une zone de la mise en page (fractions de la carte).
+local function place(element: Instance?, zone, x: number?, width: number?)
+	if element and element:IsA("GuiObject") then
+		element.Position = UDim2.fromScale(x or 0.06, zone.y)
+		element.Size = UDim2.fromScale(width or 0.88, zone.height)
+	end
+end
+
+-- Applique la classe de taille : mise en page, sous-titre, tailles de texte
+-- maximales, libellé de rareté.
 local function applySizeClass(tile: GuiObject, className: string)
 	local spec = CardStyle.SizeClasses[className] or CardStyle.SizeClasses.Standard
 	tile:SetAttribute("SizeClass", className)
+	local layout = CardStyle.layout(className)
+	place(tile:FindFirstChild("Art"), layout.art, layout.art.x, layout.art.width)
+	local gems = tile:FindFirstChild("Gems") :: GuiObject?
+	if gems then
+		gems.Position = UDim2.fromScale(0.5, layout.gems.y)
+		gems.Size = UDim2.new(gems.Size.X, UDim.new(layout.gems.height, 0))
+	end
+	place(tile:FindFirstChild("CardName"), layout.name)
+	place(tile:FindFirstChild("RarityLabel"), layout.footer)
+	local subtitle = tile:FindFirstChild("CardSubtitle") :: TextLabel?
+	if subtitle then
+		place(subtitle, layout.subtitle)
+		local text = subtitle:GetAttribute(if className == "Compact" then "CompactText" else "FullText")
+		if type(text) == "string" then
+			subtitle.Text = text
+		end
+	end
 	for _, descendant in tile:GetDescendants() do
 		if descendant:IsA("UITextSizeConstraint") and descendant.Name == "SizeLimit" then
 			local label = descendant.Parent
 			local kind = label and label:GetAttribute("TextRole")
-			if kind == "Name" then
+			if kind == "Finish" then
+				descendant.MaxTextSize = spec.captionMax
+				descendant.MinTextSize = 5
+			elseif kind == "Name" then
 				descendant.MaxTextSize = spec.nameMax
 			elseif kind == "Initial" then
 				descendant.MaxTextSize = spec.nameMax * 4
@@ -297,6 +355,10 @@ function CardTile.create(card, options: Options?): TextButton
 			Parent = art,
 		}, { Components.corner(Theme.Radius.Small) })
 	end
+	if style.variantLabel then
+		finishBadge(art, style.variantLabel)
+	end
+	tile:SetAttribute("Finish", style.variantLabel)
 
 	-- Gemmes de rareté, à cheval sur le bas de l'illustration
 	-- Largeur proportionnelle au nombre de gemmes (pas de taille automatique :
@@ -336,21 +398,23 @@ function CardTile.create(card, options: Options?): TextButton
 	})
 	nameLabel:SetAttribute("TextRole", "Name")
 
-	local subtitle
+	local subtitle, compactSubtitle
 	if card.kind == "Fighter" then
 		local element = Elements.Info[card.element]
 		local role = Roles.Info[card.role]
-		subtitle = string.format(
-			'<font color="#%s">%s</font> · %s',
+		local elementText = string.format(
+			'<font color="#%s">%s</font>',
 			Theme.Element[card.element]:ToHex(),
-			element and element.name or "?",
-			role and role.name or "?"
+			element and element.name or "?"
 		)
+		subtitle = elementText .. " · " .. (role and role.name or "?")
+		compactSubtitle = elementText -- vignette étroite : l'élément seul reste lisible
 	else
 		subtitle = "Objet"
+		compactSubtitle = subtitle
 	end
 	local subtitlePosition, subtitleSize = region(layout.subtitle)
-	scaledLabel(tile, "CardSubtitle", {
+	local subtitleLabel = scaledLabel(tile, "CardSubtitle", {
 		Text = subtitle,
 		RichText = true,
 		TextColor3 = Theme.Colors.TextMuted,
@@ -358,11 +422,11 @@ function CardTile.create(card, options: Options?): TextButton
 		Position = subtitlePosition,
 		Size = subtitleSize,
 	})
+	subtitleLabel:SetAttribute("FullText", subtitle)
+	subtitleLabel:SetAttribute("CompactText", compactSubtitle)
 
+	-- Rareté seule : la finition (Holo) a sa propre pastille sur l'illustration.
 	local rarityText = Rarities.Info[style.rarity].name
-	if style.variantLabel then
-		rarityText ..= " · " .. style.variantLabel
-	end
 	local footerPosition, footerSize = region(layout.footer)
 	scaledLabel(tile, "RarityLabel", {
 		Text = Text.upper(rarityText),
@@ -422,18 +486,25 @@ function CardTile.create(card, options: Options?): TextButton
 		stroke.Transparency = 0.5
 	end
 
-	-- Classe de taille : imposée, ou déduite de la taille en pixels de la vignette.
+	-- Classe de taille : imposée, ou déduite de la largeur réellement affichée (une
+	-- grille peut rétrécir la vignette sous sa taille déclarée), sans l'agrandissement
+	-- du survol.
 	local function refreshSizeClass()
 		local className = opts.sizeClass
 		if not className then
-			local width = tile.Size.X.Offset
+			local width = tile.AbsoluteSize.X / math.max(scale.Scale, 1e-3)
+			if width <= 0 then
+				width = tile.Size.X.Offset
+			end
 			className = if width > 0 then CardStyle.sizeClass(width) else "Standard"
 		end
-		applySizeClass(tile, className)
+		if tile:GetAttribute("SizeClass") ~= className then
+			applySizeClass(tile, className)
+		end
 	end
 	refreshSizeClass()
 	if not opts.sizeClass then
-		tile:GetPropertyChangedSignal("Size"):Connect(refreshSizeClass)
+		tile:GetPropertyChangedSignal("AbsoluteSize"):Connect(refreshSizeClass)
 	end
 
 	tile.MouseEnter:Connect(function()
